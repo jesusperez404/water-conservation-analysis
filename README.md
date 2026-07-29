@@ -209,13 +209,13 @@ The purpose is **not** to prove a predetermined conclusion.
 
 Instead, every hypothesis should be evaluated against multiple competing explanations including:
 
-- [ ] Seasonal demand
-- [ ] Weather
-- [ ] Infrastructure failures
-- [ ] Population growth
-- [ ] Development
-- [ ] Meter inaccuracies
-- [ ] Operational maintenance
+- Seasonal demand
+- Weather
+- Infrastructure failures
+- Population growth
+- Development
+- Meter inaccuracies
+- Operational maintenance
 
 The evidence should determine the conclusions.
 
@@ -225,13 +225,13 @@ The evidence should determine the conclusions.
 
 Initial tables include:
 
-- [ ] Reports
-- [ ] WaterProduction
-- [ ] Billing
-- [ ] Rainfall
-- [ ] Maintenance
-- [ ] ChemicalUsage
-- [ ] CustomerService
+- Reports
+- WaterProduction
+- Billing
+- Rainfall
+- Maintenance
+- ChemicalUsage
+- CustomerService
 
 The schema will evolve as additional datasets are incorporated.
 
@@ -243,11 +243,11 @@ Although this project begins with the Weir River Water System, the long-term goa
 
 Future enhancements may include:
 
-- [ ] Automated monthly updates
-- [ ] GIS mapping
-- [ ] Forecasting models
-- [ ] Machine learning anomaly detection
-- [ ] Public dashboard deployment
-- [ ] Multi-municipality support
+- Automated monthly updates
+- GIS mapping
+- Forecasting models
+- Machine learning anomaly detection
+- Public dashboard deployment
+- Multi-municipality support
 
 ---
