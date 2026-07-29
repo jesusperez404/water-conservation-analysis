@@ -251,15 +251,3 @@ Future enhancements may include:
 - Multi-municipality support
 
 ---
-
-# 🤝 Contributing
-
-Contributions, ideas, and feedback are always welcome.
-
-If you'd like to help improve the project, feel free to open an issue or submit a pull request.
-
----
-
-# 📄 License
-
-This project is released under the MIT License.
