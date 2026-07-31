@@ -1,21 +1,21 @@
-# 💧 Water Conservation Analysis
+# Water Conservation Analysis
 
 > A reproducible data engineering and analytics platform for investigating municipal water usage, infrastructure, and environmental trends.
 
 ---
 
-## 📖 Overview
+## Overview
 
 This project began as an investigation into the **Weir River Water System** serving **Hingham, Hull, and North Cohasset, Massachusetts**.
 
 The initial objective is to analyze publicly available monthly water system reports and determine whether long-term trends in water production can be explained by factors such as:
 
-- 🌧️ Weather & precipitation
-- 👥 Population growth
-- 🏘️ Development
-- 🔧 Infrastructure maintenance
-- 💦 Water loss & leakage
-- 🌿 Environmental changes
+- Weather & precipitation
+- Population growth
+- Development
+- Infrastructure maintenance
+- Water loss & leakage
+- Environmental changes
 
 Rather than beginning with a conclusion, this project begins with a **hypothesis** and lets the **data determine the outcome**.
 
@@ -23,7 +23,7 @@ The long-term vision is to build a reusable framework that can analyze **any mun
 
 ---
 
-# 🎯 Project Goals
+# Project Goals
 
 - Build an automated PDF ingestion pipeline
 - Extract operational data from monthly reports
@@ -35,7 +35,7 @@ The long-term vision is to build a reusable framework that can analyze **any mun
 
 ---
 
-# 🏗️ Repository Structure
+# Repository Structure
 
 ```
 water-conservation-analysis/
@@ -69,9 +69,9 @@ tests/
 
 ---
 
-# 🔄 Project Pipeline
+# Project Pipeline
 
-```text
+```
 Monthly Reports
         │
         ▼
@@ -98,7 +98,7 @@ Monthly Reports
 
 ---
 
-# 🛠️ Technology Stack
+# Technology Stack
 
 | Category | Technology |
 |-----------|------------|
@@ -113,35 +113,44 @@ Monthly Reports
 
 ---
 
-# 📅 Project Roadmap
+# Project Roadmap
 
-## ✅ Phase 1 — Project Setup
+## Phase 1 — Project Setup
 
-- [ ] Create repository structure
-- [ ] Documentation
-- [ ] Development environment
-- [ ] Database schema
+**Status: Complete**
+
+- [x] Create repository structure
+- [x] Documentation
+- [x] Development environment
+- [x] Python virtual environment
+- [x] Core analysis dependencies installed
+- [x] Initial project setup notebook
+- [x] Git workflow established
+- [ ] Database schema design
 
 ---
 
-## 📥 Phase 2 — Data Collection
+## Phase 2 — Data Collection
 
-- [ ] Download all historical monthly reports
+**Status: Upcoming**
+
+- [ ] Identify available historical water system reports
+- [ ] Download historical monthly reports
 - [ ] Archive original PDFs
 - [ ] Organize source data
 
 ---
 
-## 📄 Phase 3 — Data Extraction
+## Phase 3 — Data Extraction
 
 - [ ] Detect report layouts
 - [ ] Extract tables automatically
-- [ ] Normalize data
+- [ ] Normalize extracted data
 - [ ] Validate extracted values
 
 ---
 
-## 🗄️ Phase 4 — Database
+## Phase 4 — Database
 
 - [ ] Design relational schema
 - [ ] Import historical reports
@@ -150,7 +159,7 @@ Monthly Reports
 
 ---
 
-## 📊 Phase 5 — Dashboard
+## Phase 5 — Dashboard
 
 Develop an interactive dashboard displaying:
 
@@ -164,7 +173,7 @@ Develop an interactive dashboard displaying:
 
 ---
 
-## 🌎 Phase 6 — External Data
+## Phase 6 — External Data
 
 Integrate additional datasets including:
 
@@ -177,7 +186,7 @@ Integrate additional datasets including:
 
 ---
 
-## 📈 Phase 7 — Statistical Analysis
+## Phase 7 — Statistical Analysis
 
 Perform analyses including:
 
@@ -190,7 +199,7 @@ Perform analyses including:
 
 ---
 
-## 📑 Phase 8 — Reporting
+## Phase 8 — Reporting
 
 Generate:
 
@@ -201,7 +210,31 @@ Generate:
 
 ---
 
-# 🔬 Investigation Methodology
+# Project Status
+
+## Current Phase
+
+**Phase 1 — Project Setup Complete**
+
+## Completed
+
+- Repository initialized
+- Project structure created
+- Python virtual environment configured
+- Development dependencies installed
+- Jupyter analysis workflow established
+- Git workflow configured
+- Initial project documentation created
+
+## Next Steps
+
+- Begin data discovery
+- Identify available source documents
+- Create initial data ingestion workflow
+
+---
+
+# Investigation Methodology
 
 This project follows a data-first approach.
 
@@ -210,7 +243,7 @@ The purpose is **not** to prove a predetermined conclusion.
 Instead, every hypothesis should be evaluated against multiple competing explanations including:
 
 - Seasonal demand
-- Weather
+- Weather patterns
 - Infrastructure failures
 - Population growth
 - Development
@@ -221,7 +254,7 @@ The evidence should determine the conclusions.
 
 ---
 
-# 📁 Planned Database
+# Planned Database
 
 Initial tables include:
 
@@ -237,7 +270,7 @@ The schema will evolve as additional datasets are incorporated.
 
 ---
 
-# 🚀 Future Vision
+# Future Vision
 
 Although this project begins with the Weir River Water System, the long-term goal is to develop a reusable analytics platform capable of supporting investigations for any municipality that publishes operational water reports.
 
@@ -249,5 +282,3 @@ Future enhancements may include:
 - Machine learning anomaly detection
 - Public dashboard deployment
 - Multi-municipality support
-
----
