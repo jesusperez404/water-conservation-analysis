@@ -46,13 +46,20 @@ Water production is the primary dataset for the conservation analysis.
 
 | Field | Description | Unit | Frequency | Source | Extraction | Priority |
 |---|---|---|---|---|---|---|
-| `finished_water` | Finished water produced by the system | MGD | Monthly | Water Production | Chart | High |
-| `accord_pond_usage` | Water usage from Accord Pond | MG | Monthly | Water Production | Chart | High |
-| `accord_pond_level` | Accord Pond water level | ft | Monthly | Water Production | Chart | High |
+| `finished_water_mgd` | Mean of the current-year daily Finished Water MGD chart series | MGD | Monthly | Water Production | Validated chart extraction | High |
+| `accord_pond_usage_mg` | Sum of the current-year daily Accord Pond Usage MG chart series | MG | Monthly | Water Production | Validated chart extraction | High |
+| `accord_pond_level_ft` | Mean of the current-year daily Accord Pond Level chart series | ft | Monthly | Water Production | Validated chart extraction | High |
 
 ### Notes
 
-The production values are presented primarily as charts rather than conventional tables. The underlying values will need to be extracted and validated before they can be loaded into the database.
+Water production has been extracted, source-validated, and loaded for all 15
+reports covering October 2024 through December 2025.
+
+The extractor identifies each chart's current-year legend series and selects
+the Y axis immediately above the corresponding chart legend. It retains daily
+chart candidates for review, derives the monthly values using the mappings
+above, and modifies SQLite only after all 15 reports pass validation. The final
+table rebuild is transactional and records source-page provenance.
 
 ---
 
@@ -271,17 +278,18 @@ Every extracted observation should be traceable back to:
 
 ---
 
-# Initial Priority
+# Extraction Priority
 
-The first datasets to implement should be:
+The first four priority datasets are complete and validated across all 15
+reports:
 
-1. **Water Production**
-2. **Precipitation**
-3. **Meter Statistics**
-4. **Operational / Infrastructure Events**
-5. **Chemical Usage**
+1. **Water Production** — Complete
+2. **Precipitation** — Complete
+3. **Meter Statistics** — Complete
+4. **Operational / Infrastructure Events** — Complete
 
-Financial and customer-service datasets can be added afterward.
+The next extraction target is **Chemical Usage**. Financial, customer-service,
+field-work-order, and maintenance datasets remain later targets.
 
 ---
 
@@ -304,7 +312,7 @@ The extracted data should support investigation of:
 
 # Status
 
-**Phase 2 — Report Analysis**
+**Phase 3 — Data Extraction**
 
 - [x] Identify official monthly report source
 - [x] Identify 15 monthly reports
@@ -312,7 +320,10 @@ The extracted data should support investigation of:
 - [x] Identify recurring datasets
 - [x] Identify extraction types
 - [x] Identify initial analytical priorities
-- [ ] Validate chart extraction
-- [ ] Validate fields against all 15 reports programmatically
-- [ ] Finalize database schema
-- [ ] Build automated ingestion pipeline
+- [x] Extract and validate precipitation across all 15 reports
+- [x] Extract and validate meter statistics across all 15 reports
+- [x] Extract and validate operational events across all 15 reports
+- [x] Extract and validate water production across all 15 reports
+- [x] Validate current-year chart extraction and chart-specific Y-axis selection
+- [x] Load validated water-production results transactionally
+- [ ] Extract and validate chemical usage
