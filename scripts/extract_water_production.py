@@ -3,7 +3,6 @@ from __future__ import annotations
 import csv
 import math
 import re
-import sqlite3
 from calendar import monthrange
 from pathlib import Path
 from statistics import mean
@@ -13,7 +12,6 @@ import pymupdf
 
 
 RAW_DIR = Path("data/raw")
-DB_PATH = Path("database/water.db")
 OUTPUT_DIR = Path("data/processed/water_production_review")
 DAILY_CSV = OUTPUT_DIR / "water_production_daily_candidates.csv"
 MONTHLY_CSV = OUTPUT_DIR / "water_production_monthly_candidates.csv"
@@ -250,26 +248,12 @@ def numeric_axis_candidates(page, legend_y):
 
 
 def isolate_axis_ticks(page, legend_y):
-    """
-    Isolate the Y-axis belonging to THIS chart.
-
-    Multiple water-production charts can share a PDF page. The old
-    implementation selected the longest linear numeric sequence on the
-    page, which sometimes caused Accord Pond Usage to inherit the Finished
-    Water axis.
-
-    Each chart's legend is directly below its own plot. Therefore the
-    correct Y-axis is the valid linear tick sequence whose bottom tick is
-    closest above the current metric's legend.
-    """
     candidates = numeric_axis_candidates(page, legend_y)
 
     if len(candidates) < 3:
-        raise ValueError(
-            f"only {len(candidates)} Y-axis tick candidates found"
-        )
+        raise ValueError(f"only {len(candidates)} Y-axis tick candidates found")
 
-    # Separate vertically distinct chart axes.
+    # Split candidates into vertically local groups before testing linearity.
     groups = []
     current = [candidates[0]]
 
@@ -291,58 +275,20 @@ def isolate_axis_ticks(page, legend_y):
             for end in range(start + 3, n + 1):
                 subset = group[start:end]
 
-                ys = np.array(
-                    [row["y"] for row in subset],
-                    dtype=float,
-                )
-                vals = np.array(
-                    [row["value"] for row in subset],
-                    dtype=float,
-                )
+                ys = np.array([r["y"] for r in subset], dtype=float)
+                vals = np.array([r["value"] for r in subset], dtype=float)
 
-                value_steps = np.diff(vals)
+                diffs = np.diff(vals)
 
-                if not (
-                    np.all(value_steps > 0)
-                    or np.all(value_steps < 0)
-                ):
+                if not (np.all(diffs > 0) or np.all(diffs < 0)):
                     continue
 
-                # Tick values must form a nearly constant arithmetic sequence.
-                if len(value_steps) > 1:
-                    step_abs = np.abs(value_steps)
-                    step_mean = float(np.mean(step_abs))
-
-                    if step_mean <= 0:
-                        continue
-
-                    if float(np.std(step_abs)) > max(
-                        0.001,
-                        step_mean * 0.04,
-                    ):
-                        continue
-
-                slope, intercept = np.polyfit(
-                    ys,
-                    vals,
-                    1,
-                )
+                slope, intercept = np.polyfit(ys, vals, 1)
                 predicted = slope * ys + intercept
 
-                span = float(
-                    vals.max() - vals.min()
-                )
-                tolerance = max(
-                    0.015,
-                    span * 0.015,
-                )
-                error = float(
-                    np.max(
-                        np.abs(
-                            predicted - vals
-                        )
-                    )
-                )
+                span = float(vals.max() - vals.min())
+                tolerance = max(0.015, span * 0.015)
+                error = float(np.max(np.abs(predicted - vals)))
 
                 if error > tolerance:
                     continue
@@ -350,62 +296,33 @@ def isolate_axis_ticks(page, legend_y):
                 y_steps = np.diff(ys)
 
                 if len(y_steps) > 1:
-                    spacing_mean = float(
-                        np.mean(y_steps)
-                    )
+                    spacing_error = float(np.std(y_steps))
+                    spacing_mean = float(np.mean(y_steps))
 
                     if spacing_mean <= 0:
                         continue
 
-                    if float(np.std(y_steps)) > max(
-                        1.5,
-                        spacing_mean * 0.12,
-                    ):
+                    if spacing_error > max(1.5, spacing_mean * 0.12):
                         continue
 
-                bottom_y = float(
-                    np.max(ys)
-                )
-
-                legend_gap = (
-                    legend_y - bottom_y
-                )
-
-                # The axis must be above this metric's legend.
-                if legend_gap <= 0:
-                    continue
-
                 valid_sequences.append(
-                    {
-                        "subset": subset,
-                        "legend_gap": legend_gap,
-                        "count": len(subset),
-                        "span": span,
-                        "error": error,
-                    }
+                    (
+                        len(subset),
+                        span,
+                        -error,
+                        subset,
+                    )
                 )
 
     if not valid_sequences:
-        raise ValueError(
-            "could not isolate linear Y-axis tick sequence"
-        )
+        raise ValueError("could not isolate linear Y-axis tick sequence")
 
-    # PRIMARY RULE:
-    # The correct chart is the one immediately above this legend.
-    #
-    # Use rounded gap buckets so tiny PDF-coordinate differences do not
-    # outweigh having a fuller tick sequence.
-    best = min(
+    _, _, _, best = max(
         valid_sequences,
-        key=lambda item: (
-            round(item["legend_gap"], 1),
-            -item["count"],
-            -item["span"],
-            item["error"],
-        ),
+        key=lambda item: (item[0], item[1], item[2]),
     )
 
-    return best["subset"]
+    return best
 
 
 def get_plot_x_bounds(page, ticks):
@@ -627,146 +544,6 @@ def write_csv(path, rows):
         writer.writerows(rows)
 
 
-
-def load_water_production(monthly_rows):
-    """
-    Rebuild water_production only after every report has passed extraction.
-
-    Mapping:
-      finished_water_mgd   <- finished_water_mean_mgd
-      accord_pond_usage_mg <- accord_pond_usage_total_mg
-      accord_pond_level_ft <- accord_pond_level_mean_ft
-    """
-    if not DB_PATH.exists():
-        raise ValueError(f"Database not found: {DB_PATH}")
-
-    if len(monthly_rows) != EXPECTED_REPORTS:
-        raise ValueError(
-            f"Refusing database load: expected {EXPECTED_REPORTS} "
-            f"validated monthly rows, got {len(monthly_rows)}"
-        )
-
-    conn = sqlite3.connect(DB_PATH)
-
-    try:
-        conn.execute("PRAGMA foreign_keys = ON")
-
-        report_rows = conn.execute(
-            """
-            SELECT report_id, report_month
-            FROM reports
-            ORDER BY report_month
-            """
-        ).fetchall()
-
-        report_ids = {
-            str(report_month): report_id
-            for report_id, report_month in report_rows
-        }
-
-        candidate_months = {
-            row["observation_month"]
-            for row in monthly_rows
-        }
-
-        missing_reports = sorted(
-            candidate_months - set(report_ids)
-        )
-
-        if missing_reports:
-            raise ValueError(
-                "Missing matching report records for: "
-                + ", ".join(missing_reports)
-            )
-
-        conn.execute("BEGIN")
-
-        # Same validated-rebuild pattern used by extract_operations.py.
-        conn.execute("DELETE FROM water_production")
-
-        for row in monthly_rows:
-            source_pages = sorted(
-                {
-                    int(row["finished_water_page"]),
-                    int(row["accord_pond_usage_page"]),
-                    int(row["accord_pond_level_page"]),
-                }
-            )
-
-            source_page = source_pages[0]
-
-            notes = (
-                "Chart-derived monthly observation. "
-                "finished_water_mgd = mean of extracted daily Finished Water MGD; "
-                "accord_pond_usage_mg = sum of extracted daily Accord Pond Usage MG; "
-                "accord_pond_level_ft = mean of extracted daily Accord Pond Level ft. "
-                f"Source PDF pages: {', '.join(str(p) for p in source_pages)}. "
-                "Daily chart candidates retained in "
-                "data/processed/water_production_review/"
-                "water_production_daily_candidates.csv."
-            )
-
-            conn.execute(
-                """
-                INSERT INTO water_production (
-                    report_id,
-                    observation_month,
-                    finished_water_mgd,
-                    accord_pond_usage_mg,
-                    accord_pond_level_ft,
-                    extraction_method,
-                    source_page,
-                    notes
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    report_ids[row["observation_month"]],
-                    row["observation_month"],
-                    float(row["finished_water_mean_mgd"]),
-                    float(row["accord_pond_usage_total_mg"]),
-                    float(row["accord_pond_level_mean_ft"]),
-                    "validated_chart_extraction",
-                    source_page,
-                    notes,
-                ),
-            )
-
-        count = conn.execute(
-            "SELECT COUNT(*) FROM water_production"
-        ).fetchone()[0]
-
-        distinct_months = conn.execute(
-            """
-            SELECT COUNT(DISTINCT observation_month)
-            FROM water_production
-            """
-        ).fetchone()[0]
-
-        if count != EXPECTED_REPORTS:
-            raise ValueError(
-                f"Post-load validation failed: expected {EXPECTED_REPORTS} "
-                f"rows, found {count}"
-            )
-
-        if distinct_months != EXPECTED_REPORTS:
-            raise ValueError(
-                f"Post-load validation failed: expected {EXPECTED_REPORTS} "
-                f"distinct months, found {distinct_months}"
-            )
-
-        conn.commit()
-
-        return count
-
-    except Exception:
-        conn.rollback()
-        raise
-
-    finally:
-        conn.close()
-
-
 def main():
     pdfs = sorted(RAW_DIR.glob("weir_river_*.pdf"))
 
@@ -797,7 +574,6 @@ def main():
             # IMPORTANT: report rows stay local until all three metrics pass.
             report_daily = []
             report_metrics = {}
-            report_pages = {}
 
             with pymupdf.open(pdf_path) as doc:
                 for metric_name, config in METRICS.items():
@@ -819,7 +595,6 @@ def main():
                     )
 
                     report_metrics[metric_name] = rows
-                    report_pages[metric_name] = page_index + 1
 
                     values = [r["value"] for r in rows]
 
@@ -867,9 +642,6 @@ def main():
                 "accord_pond_usage_mean_daily_mg": round(mean(usage), 4),
                 "accord_pond_level_mean_ft": round(mean(pond), 4),
                 "accord_pond_level_end_ft": round(pond[-1], 4),
-                "finished_water_page": report_pages["finished_water"],
-                "accord_pond_usage_page": report_pages["accord_pond_usage"],
-                "accord_pond_level_page": report_pages["accord_pond_level"],
                 "days": days,
             }
 
@@ -908,32 +680,8 @@ def main():
         for month, error in failures:
             print(f"  {month}: {error}")
 
-        print()
-        print(
-            "STOPPED: validation failure(s) detected. "
-            "water_production was NOT modified."
-        )
-        return
-
-    if len(all_monthly) != EXPECTED_REPORTS:
-        print()
-        print(
-            f"STOPPED: expected {EXPECTED_REPORTS} validated reports, "
-            f"got {len(all_monthly)}. water_production was NOT modified."
-        )
-        return
-
     print()
-    print("ALL 15 WATER PRODUCTION EXTRACTIONS PASSED.")
-    print("Loading validated monthly observations into SQLite...")
-
-    loaded = load_water_production(all_monthly)
-
-    print()
-    print("=" * 90)
-    print("DATABASE LOAD COMPLETE")
-    print("=" * 90)
-    print(f"water_production rows: {loaded}")
+    print("SQLite was NOT modified.")
 
 
 if __name__ == "__main__":
