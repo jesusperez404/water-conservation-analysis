@@ -78,6 +78,7 @@ The following datasets have been implemented and validated across the 15 reports
 - chemical usage
 - customer service
 - billing and collections
+- field work orders
 
 ### Water production
 
@@ -119,9 +120,15 @@ receivables, and 90+ receivables. February 2025 billed revenue and December 2024
 or malformed. March 2025 aged-receivables fields are `NULL` because the report repeats
 February and provides no March chart values.
 
+### Field work orders
+
+`field_work_orders` contains two recurring measures per report month: `total` and
+`collection_posting`. The August 2025 decline in reported total work orders is
+preserved exactly as published.
+
 ## Current next extraction target
 
-The next planned extraction target is field work orders unless the user chooses
+The next planned extraction target is maintenance capital unless the user chooses
 another metric.
 
 ## Useful commands
@@ -136,6 +143,7 @@ python scripts\extract_water_production.py
 python scripts\extract_chemical_usage.py --write-db
 python scripts\extract_customer_service.py --write-db
 python scripts\extract_billing_collections.py --write-db
+python scripts\extract_field_work_orders.py --write-db
 python scripts\check_database.py
 ```
 
