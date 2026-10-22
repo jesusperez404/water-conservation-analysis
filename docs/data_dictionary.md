@@ -84,20 +84,26 @@ Chemical usage is reported as a monthly operational table.
 
 | Field | Description | Unit | Frequency | Source | Extraction | Priority |
 |---|---|---|---|---|---|---|
-| `sodium_hypochlorite` | Sodium hypochlorite used | gallons | Monthly | Chemical Use | Table | Medium |
-| `aluminum_sulfate` | Aluminum sulfate used | report-specific | Monthly | Chemical Use | Table | Medium |
-| `zinc_orthophosphate` | Zinc orthophosphate used | gallons | Monthly | Chemical Use | Table | Medium |
-| `hydrofluosilicic_acid` | Hydrofluosilicic acid used | gallons | Monthly | Chemical Use | Table | Medium |
-| `potassium_permanganate` | Potassium permanganate used | pounds | Monthly | Chemical Use | Table | Medium |
-| `calcium_hydroxide` | Calcium hydroxide used | tons | Monthly | Chemical Use | Table | Medium |
-| `gen_floc_610` | Gen Floc 610 used | pounds | Monthly | Chemical Use | Table | Medium |
-| `gen_floc_620` | Gen Floc 620 used | pounds | Monthly | Chemical Use | Table | Medium |
+| `sodium_hypochlorite` | Sodium hypochlorite used | gallons | Monthly | Chemical Use | Validated table extraction | Medium |
+| `aluminum_sulfate` | Aluminum sulfate used | report-specific | Monthly | Chemical Use | Validated table extraction | Medium |
+| `zinc_orthophosphate` | Zinc orthophosphate used | gallons | Monthly | Chemical Use | Validated table extraction | Medium |
+| `hydrofluorosilic_acid` | Hydrofluorosilic acid used | gallons | Monthly | Chemical Use | Validated table extraction | Medium |
+| `potassium_permanganate` | Potassium permanganate used | pounds | Monthly | Chemical Use | Validated table extraction | Medium |
+| `calcium_hydroxide` | Calcium hydroxide used | tons | Monthly | Chemical Use | Validated table extraction | Medium |
+| `gen_floc_610` | Gen Floc 610 used | pounds | Monthly | Chemical Use | Validated table extraction | Medium |
+| `gen_floc_620` | Gen Floc 620 used | pounds | Monthly | Chemical Use | Validated table extraction | Medium |
 
 ### Notes
 
-The chemical-use table contains historical months in addition to the current reporting month.
+Chemical usage has been extracted, source-validated, and loaded for all 15
+reports. The normalized database table stores one row per observation month and
+chemical using `chemical_name`, `amount`, and `unit`.
 
-The ingestion process must avoid creating duplicate observations when the same month appears in multiple reports.
+The source table repeats historical months. The extractor cross-validates those
+repeated values but loads only the current month from each report, preventing
+duplicate observations. It validates all reports before transactionally
+rebuilding the 120-row table. `Dies./gen.` is excluded because it is not a
+chemical and its unit is not defined by the report.
 
 ---
 
@@ -280,15 +286,16 @@ Every extracted observation should be traceable back to:
 
 # Extraction Priority
 
-The first four priority datasets are complete and validated across all 15
+The first five priority datasets are complete and validated across all 15
 reports:
 
 1. **Water Production** — Complete
 2. **Precipitation** — Complete
 3. **Meter Statistics** — Complete
 4. **Operational / Infrastructure Events** — Complete
+5. **Chemical Usage** — Complete
 
-The next extraction target is **Chemical Usage**. Financial, customer-service,
+The next extraction target is **Customer Service**. Financial,
 field-work-order, and maintenance datasets remain later targets.
 
 ---
@@ -326,4 +333,7 @@ The extracted data should support investigation of:
 - [x] Extract and validate water production across all 15 reports
 - [x] Validate current-year chart extraction and chart-specific Y-axis selection
 - [x] Load validated water-production results transactionally
-- [ ] Extract and validate chemical usage
+- [x] Extract and validate chemical usage across all 15 reports
+- [x] Cross-validate repeated historical chemical-use values
+- [x] Load validated chemical usage transactionally
+- [ ] Extract and validate customer service
