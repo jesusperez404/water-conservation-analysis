@@ -68,6 +68,8 @@ The project currently contains **15 monthly Weir River Water System reports cove
 - [x] Customer service validated across all 15 reports
 - [x] Billing and collections extraction implemented
 - [x] Billing and collections validated across all 15 reports
+- [x] Field work order extraction implemented
+- [x] Field work orders validated across all 15 reports
 - [x] Database integrity checking implemented
 - [x] Data dictionary created
 
@@ -83,6 +85,7 @@ The project currently contains **15 monthly Weir River Water System reports cove
 | Chemical usage | 15/15 | Complete |
 | Customer service | 15/15 | Complete |
 | Billing and collections | 15/15 | Complete |
+| Field work orders | 15/15 | Complete |
 
 The current database contains **81 validated operational event records** and
 **15 validated monthly water-production records**.
@@ -96,6 +99,9 @@ calls, service level, and average speed of answer.
 Billing and collections contains **15 validated monthly records**. March 2025
 aged-receivables values are `NULL` because that report provides only repeated
 February values and no March chart observation.
+
+Field work orders contains **30 validated observations**: total work orders and
+collection-posting activities for each report month.
 
 Water production is derived from the current-year series in the report charts.
 The extractor validates all 15 reports before transactionally rebuilding the
@@ -138,6 +144,7 @@ scripts/
 ├── extract_chemical_usage.py
 ├── extract_customer_service.py
 ├── extract_billing_collections.py
+├── extract_field_work_orders.py
 └── check_database.py
 
 analysis/
@@ -248,6 +255,7 @@ Additional dependencies will be added as the project develops.
 - [x] Extract chemical usage
 - [x] Extract customer service data
 - [x] Extract billing and collections
+- [x] Extract field work orders
 - [x] Normalize extracted observations
 - [x] Validate extracted values
 - [x] Record source-page provenance
@@ -255,7 +263,6 @@ Additional dependencies will be added as the project develops.
 
 #### Remaining
 
-- [ ] Extract field work orders
 - [ ] Extract maintenance expenditures
 - [ ] Validate remaining datasets
 
@@ -277,6 +284,7 @@ Additional dependencies will be added as the project develops.
 - [x] Import chemical usage
 - [x] Import customer service
 - [x] Import billing and collections
+- [x] Import field work orders
 - [x] Database integrity validation
 - [x] Data provenance fields
 - [x] Data dictionary
@@ -381,9 +389,9 @@ Generate:
 
 The project has moved beyond initial setup and data collection.
 
-Seven major datasets — **precipitation, meter statistics, operational events, water production, chemical usage, customer service, and billing and collections** — have now been extracted, validated, and loaded into the SQLite database for all 15 monthly reports.
+Eight major datasets — **precipitation, meter statistics, operational events, water production, chemical usage, customer service, billing and collections, and field work orders** — have now been extracted, validated, and loaded into the SQLite database for all 15 monthly reports.
 
-The next extraction target is **field work orders**.
+The next extraction target is **maintenance expenditures**.
 
 ### Completed
 
@@ -401,12 +409,13 @@ The next extraction target is **field work orders**.
 - Chemical usage extracted and validated
 - Customer service extracted and validated
 - Billing and collections extracted and validated
+- Field work orders extracted and validated
 - Database integrity checks implemented
 - Data dictionary created
 
 ### Next Steps
 
-1. Extract and validate field work orders
+1. Extract and validate maintenance expenditures
 2. Continue extracting remaining report sections
 3. Complete the analytical database
 4. Begin exploratory analysis

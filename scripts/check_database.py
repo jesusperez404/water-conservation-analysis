@@ -14,6 +14,7 @@ TABLES = [
     "chemical_usage",
     "customer_service",
     "billing_collections",
+    "field_work_orders",
 ]
 
 
@@ -97,7 +98,13 @@ def main():
                     WHEN b.report_id IS NOT NULL
                     THEN 'YES'
                     ELSE 'NO'
-                END AS billing_collections
+                END AS billing_collections,
+
+                CASE
+                    WHEN f.work_order_count = 2
+                    THEN 'YES'
+                    ELSE 'NO'
+                END AS field_work_orders
 
             FROM reports r
 
@@ -129,6 +136,13 @@ def main():
             LEFT JOIN billing_collections b
                 ON b.report_id = r.report_id
 
+            LEFT JOIN (
+                SELECT report_id, COUNT(*) AS work_order_count
+                FROM field_work_orders
+                GROUP BY report_id
+            ) f
+                ON f.report_id = r.report_id
+
             ORDER BY r.report_month
             """
         ).fetchall()
@@ -144,6 +158,7 @@ def main():
             chemical_usage,
             customer_service,
             billing_collections,
+            field_work_orders,
         ) in rows:
             print(
                 f"{month}  "
@@ -153,7 +168,8 @@ def main():
                 f"water_production={water_production}  "
                 f"chemical_usage={chemical_usage}  "
                 f"customer_service={customer_service}  "
-                f"billing={billing_collections}"
+                f"billing={billing_collections}  "
+                f"work_orders={field_work_orders}"
             )
 
             if "NO" in (
@@ -164,6 +180,7 @@ def main():
                 chemical_usage,
                 customer_service,
                 billing_collections,
+                field_work_orders,
             ):
                 coverage_failures += 1
 
@@ -195,6 +212,39 @@ def main():
                 issues.append(f"bad_units={bad_units}")
             if issues:
                 chemical_failures += 1
+            print(f"{month}  {'PASS' if not issues else 'FAIL: ' + ', '.join(issues)}")
+
+        print("\nFIELD WORK ORDER CHECKS")
+        print("-" * 72)
+
+        work_order_rows = conn.execute(
+            """
+            SELECT
+                observation_month,
+                MAX(CASE WHEN work_order_type = 'total' THEN work_order_count END),
+                MAX(CASE WHEN work_order_type = 'collection_posting' THEN work_order_count END),
+                COUNT(*),
+                COUNT(DISTINCT work_order_type)
+            FROM field_work_orders
+            GROUP BY observation_month
+            ORDER BY observation_month
+            """
+        ).fetchall()
+
+        work_order_failures = 0
+        for month, total, collection_posting, row_count, type_count in work_order_rows:
+            issues = []
+            if row_count != 2 or type_count != 2:
+                issues.append("coverage")
+            if total is None or total < 0:
+                issues.append("total")
+            if collection_posting is None or collection_posting < 0:
+                issues.append("collection_posting")
+            if total is not None and collection_posting is not None:
+                if collection_posting > total:
+                    issues.append("collection_exceeds_total")
+            if issues:
+                work_order_failures += 1
             print(f"{month}  {'PASS' if not issues else 'FAIL: ' + ', '.join(issues)}")
 
         print("\nBILLING AND COLLECTIONS CHECKS")
@@ -317,6 +367,7 @@ def main():
             and chemical_failures == 0
             and service_failures == 0
             and billing_failures == 0
+            and work_order_failures == 0
         ):
             print("PASS: database coverage and dataset sanity checks passed.")
         else:
@@ -326,7 +377,8 @@ def main():
                 f"{range_failures} water-production range failure(s), "
                 f"{chemical_failures} chemical-usage failure(s), "
                 f"{service_failures} customer-service failure(s), "
-                f"{billing_failures} billing failure(s)."
+                f"{billing_failures} billing failure(s), "
+                f"{work_order_failures} work-order failure(s)."
             )
 
     finally:

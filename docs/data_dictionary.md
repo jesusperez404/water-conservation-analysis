@@ -191,11 +191,16 @@ narrative uses ambiguous punctuation. March 2025 aged-receivables values are
 
 | Field | Description | Unit | Frequency | Source | Extraction | Priority |
 |---|---|---|---|---|---|---|
-| `field_work_orders` | Total field work orders/activities recorded | count | Monthly | Field Work Orders | Text | Medium |
+| `total` | Total field work orders/activities recorded | count | Monthly | Field Work Orders | Validated text extraction | Medium |
+| `collection_posting` | Non-payment collection posting activities | count | Monthly | Field Work Orders | Validated text extraction | Medium |
 
 ### Notes
 
-The reports provide additional categorization of field activities. These categories should be evaluated during extraction before determining whether they warrant separate database fields.
+Field work orders has been extracted, source-validated, and loaded for all 15
+reports. The normalized table uses `work_order_type` and `work_order_count` to
+store the recurring `total` and `collection_posting` observations. Other chart
+categories are not loaded because the narrative does not define them
+consistently across the full reporting period.
 
 ---
 
@@ -295,7 +300,7 @@ Every extracted observation should be traceable back to:
 
 # Extraction Priority
 
-The first seven priority datasets are complete and validated across all 15
+The first eight priority datasets are complete and validated across all 15
 reports:
 
 1. **Water Production** — Complete
@@ -305,9 +310,9 @@ reports:
 5. **Chemical Usage** — Complete
 6. **Customer Service** — Complete
 7. **Billing and Collections** — Complete
+8. **Field Work Orders** — Complete
 
-The next extraction target is **Field Work Orders**. Maintenance data remains a
-later target.
+The next extraction target is **Maintenance Capital / CAP**.
 
 ---
 
@@ -353,4 +358,6 @@ The extracted data should support investigation of:
 - [x] Extract and validate billing and collections across all 15 reports
 - [x] Preserve unreported March 2025 aged-receivables values as `NULL`
 - [x] Load validated billing and collections transactionally
-- [ ] Extract and validate field work orders
+- [x] Extract and validate field work orders across all 15 reports
+- [x] Load total and collection-posting observations transactionally
+- [ ] Extract and validate maintenance capital
