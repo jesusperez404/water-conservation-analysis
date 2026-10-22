@@ -219,3 +219,114 @@ CREATE INDEX IF NOT EXISTS idx_work_orders_month
 
 CREATE INDEX IF NOT EXISTS idx_maintenance_month
     ON maintenance_cap(observation_month);
+
+-- ============================================================
+-- Analytical views
+-- ============================================================
+
+DROP VIEW IF EXISTS monthly_system_summary;
+DROP VIEW IF EXISTS monthly_operations_summary;
+DROP VIEW IF EXISTS monthly_dataset_coverage;
+
+CREATE VIEW monthly_operations_summary AS
+SELECT
+    r.report_month AS observation_month,
+    MAX(CASE WHEN o.event_type = 'main_breaks' THEN o.event_count END)
+        AS main_breaks,
+    MAX(CASE WHEN o.event_type = 'service_line_repairs' THEN o.event_count END)
+        AS service_line_repairs,
+    MAX(CASE WHEN o.event_type = 'hydrant_replacements' THEN o.event_count END)
+        AS hydrant_replacements,
+    MAX(CASE WHEN o.event_type = 'valve_replacements' THEN o.event_count END)
+        AS valve_replacements,
+    MAX(CASE WHEN o.event_type = 'backflow_tests' THEN o.event_count END)
+        AS backflow_tests,
+    MAX(CASE WHEN o.event_type = 'dig_safe_markouts' THEN o.event_count END)
+        AS dig_safe_markouts,
+    MAX(CASE WHEN o.event_type = 'surveys' THEN o.event_count END)
+        AS surveys
+FROM reports r
+LEFT JOIN operational_events o
+    ON o.report_id = r.report_id
+GROUP BY r.report_id, r.report_month;
+
+CREATE VIEW monthly_dataset_coverage AS
+SELECT
+    r.report_month AS observation_month,
+    CASE WHEN p.report_id IS NOT NULL THEN 1 ELSE 0 END AS precipitation,
+    CASE WHEN m.report_id IS NOT NULL THEN 1 ELSE 0 END AS meter_statistics,
+    CASE WHEN o.report_id IS NOT NULL THEN 1 ELSE 0 END AS operational_events,
+    CASE WHEN w.report_id IS NOT NULL THEN 1 ELSE 0 END AS water_production,
+    CASE WHEN c.row_count = 8 THEN 1 ELSE 0 END AS chemical_usage,
+    CASE WHEN cs.report_id IS NOT NULL THEN 1 ELSE 0 END AS customer_service,
+    CASE WHEN b.report_id IS NOT NULL THEN 1 ELSE 0 END AS billing_collections,
+    CASE WHEN f.row_count = 2 THEN 1 ELSE 0 END AS field_work_orders,
+    CASE WHEN mc.report_id IS NOT NULL THEN 1 ELSE 0 END AS maintenance_cap
+FROM reports r
+LEFT JOIN precipitation p ON p.report_id = r.report_id
+LEFT JOIN meter_statistics m ON m.report_id = r.report_id
+LEFT JOIN (
+    SELECT DISTINCT report_id FROM operational_events
+) o ON o.report_id = r.report_id
+LEFT JOIN water_production w ON w.report_id = r.report_id
+LEFT JOIN (
+    SELECT report_id, COUNT(*) AS row_count
+    FROM chemical_usage
+    GROUP BY report_id
+) c ON c.report_id = r.report_id
+LEFT JOIN customer_service cs ON cs.report_id = r.report_id
+LEFT JOIN billing_collections b ON b.report_id = r.report_id
+LEFT JOIN (
+    SELECT report_id, COUNT(*) AS row_count
+    FROM field_work_orders
+    GROUP BY report_id
+) f ON f.report_id = r.report_id
+LEFT JOIN maintenance_cap mc ON mc.report_id = r.report_id;
+
+CREATE VIEW monthly_system_summary AS
+SELECT
+    r.report_month AS observation_month,
+    p.precipitation_inches,
+    m.meters_scheduled,
+    m.actual_reads_pct,
+    m.estimated_reads_pct,
+    m.meters_over_10_years_pct,
+    m.meters_changed,
+    m.new_meter_installations,
+    m.existing_meter_replacements,
+    w.finished_water_mgd,
+    w.accord_pond_usage_mg,
+    w.accord_pond_level_ft,
+    ops.main_breaks,
+    ops.service_line_repairs,
+    ops.hydrant_replacements,
+    ops.valve_replacements,
+    ops.backflow_tests,
+    ops.dig_safe_markouts,
+    ops.surveys,
+    cs.customer_contacts,
+    cs.service_level_pct,
+    cs.average_speed_seconds,
+    b.revenue_billed_usd,
+    b.revenue_collected_usd,
+    b.aged_accounts_receivable_usd,
+    b.accounts_receivable_90_plus_usd,
+    MAX(CASE WHEN f.work_order_type = 'total' THEN f.work_order_count END)
+        AS total_work_orders,
+    MAX(CASE WHEN f.work_order_type = 'collection_posting' THEN f.work_order_count END)
+        AS collection_posting_work_orders,
+    mc.monthly_expenditure_usd AS maintenance_paid_usd,
+    mc.cumulative_expenditure_usd AS maintenance_cumulative_usd,
+    mc.annual_budget_usd AS maintenance_annual_budget_usd,
+    mc.remaining_budget_usd AS maintenance_remaining_budget_usd
+FROM reports r
+LEFT JOIN precipitation p ON p.report_id = r.report_id
+LEFT JOIN meter_statistics m ON m.report_id = r.report_id
+LEFT JOIN water_production w ON w.report_id = r.report_id
+LEFT JOIN monthly_operations_summary ops
+    ON ops.observation_month = r.report_month
+LEFT JOIN customer_service cs ON cs.report_id = r.report_id
+LEFT JOIN billing_collections b ON b.report_id = r.report_id
+LEFT JOIN field_work_orders f ON f.report_id = r.report_id
+LEFT JOIN maintenance_cap mc ON mc.report_id = r.report_id
+GROUP BY r.report_id, r.report_month;

@@ -274,7 +274,7 @@ Additional dependencies will be added as the project develops.
 
 ### Phase 4 — Database
 
-**Status: In Progress**
+**Status: Complete**
 
 #### Completed
 
@@ -294,17 +294,14 @@ Additional dependencies will be added as the project develops.
 - [x] Data provenance fields
 - [x] Data dictionary
 - [x] Complete database coverage
-
-#### Remaining
-
-- [ ] Add automated database tests
-- [ ] Finalize analytical views
+- [x] Add automated database tests
+- [x] Finalize analytical views
 
 ---
 
 ### Phase 5 — Exploratory Analysis
 
-**Status: Upcoming**
+**Status: In Progress**
 
 Planned analysis includes:
 
@@ -389,7 +386,7 @@ Generate:
 
 ### Current Phase
 
-**Phase 4 — Database**
+**Phase 5 — Exploratory Analysis**
 
 The project has moved beyond initial setup and data collection.
 
@@ -418,16 +415,16 @@ coverage of the recurring report datasets currently represented by the schema.
 - Field work orders extracted and validated
 - Maintenance CAP extracted and validated
 - Database integrity checks implemented
+- Automated database tests implemented
+- Monthly analytical views finalized
 - Data dictionary created
 
 ### Next Steps
 
-1. Add automated database tests
-2. Finalize analytical views
-3. Begin exploratory analysis
-4. Identify relationships and anomalies
-5. Integrate external datasets
-6. Build visualizations and dashboard
+1. Complete exploratory analysis
+2. Identify relationships and anomalies
+3. Integrate external datasets
+4. Build visualizations and dashboard
 
 ---
 
@@ -471,6 +468,17 @@ Each extracted dataset can include:
 Extraction scripts validate their results before modifying the database.
 
 The database also includes integrity checks to confirm that expected monthly coverage exists across the extracted datasets.
+
+Three reusable views support analysis without repeating joins:
+
+- `monthly_system_summary` combines monthly production, weather, meter,
+  operations, customer-service, billing, work-order, and maintenance measures.
+- `monthly_operations_summary` pivots recurring operational event types.
+- `monthly_dataset_coverage` exposes per-month completion flags for all nine
+  validated datasets.
+
+Run `python database/apply_schema.py` to apply the schema and refresh the views.
+Run `python -m unittest discover -s tests -v` for extractor and database tests.
 
 This is intended to make the project **reproducible, auditable, and resistant to silent extraction errors**.
 
