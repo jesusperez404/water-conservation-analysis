@@ -301,24 +301,27 @@ Additional dependencies will be added as the project develops.
 
 ### Phase 5 — Exploratory Analysis
 
-**Status: In Progress**
+**Status: Complete**
 
 Planned analysis includes:
 
-- [ ] Water production trends
-- [ ] Seasonal patterns
-- [ ] Precipitation relationships
-- [ ] Infrastructure activity
-- [ ] Meter replacement trends
-- [ ] Water loss indicators
-- [ ] Anomaly identification
-- [ ] Cross-dataset comparisons
+- [x] Water production trends
+- [x] Seasonal-pattern assessment and sample-size limits
+- [x] Precipitation relationships
+- [x] Infrastructure activity
+- [x] Meter replacement trends
+- [x] Water-loss feasibility assessment
+- [x] Anomaly identification
+- [x] Cross-dataset comparisons
+
+See [`docs/exploratory_analysis.md`](docs/exploratory_analysis.md) for findings,
+figures, machine-readable results, and limitations.
 
 ---
 
 ### Phase 6 — Dashboard
 
-**Status: Planned**
+**Status: In Progress**
 
 Develop an interactive dashboard displaying:
 
@@ -386,7 +389,7 @@ Generate:
 
 ### Current Phase
 
-**Phase 5 — Exploratory Analysis**
+**Phase 6 — Dashboard**
 
 The project has moved beyond initial setup and data collection.
 
@@ -417,14 +420,13 @@ coverage of the recurring report datasets currently represented by the schema.
 - Database integrity checks implemented
 - Automated database tests implemented
 - Monthly analytical views finalized
+- Exploratory analysis and reproducible figures completed
 - Data dictionary created
 
 ### Next Steps
 
-1. Complete exploratory analysis
-2. Identify relationships and anomalies
-3. Integrate external datasets
-4. Build visualizations and dashboard
+1. Build the interactive dashboard
+2. Integrate selected external datasets
 
 ---
 
