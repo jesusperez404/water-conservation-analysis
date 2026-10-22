@@ -321,18 +321,22 @@ figures, machine-readable results, and limitations.
 
 ### Phase 6 — Dashboard
 
-**Status: In Progress**
+**Status: Complete**
 
-Develop an interactive dashboard displaying:
+The buildless, offline-friendly dashboard displays:
 
-- [ ] Water production
-- [ ] Customer demand
-- [ ] Rainfall
-- [ ] Infrastructure events
-- [ ] Meter statistics
-- [ ] Water loss
-- [ ] Historical trends
-- [ ] Custom filtering
+- [x] Water production
+- [x] Customer-service activity
+- [x] Rainfall
+- [x] Infrastructure events and field work orders
+- [x] Meter statistics
+- [x] Water-loss feasibility and data limitations
+- [x] Historical trends and anomaly review
+- [x] Date, metric, and chemical filtering
+
+See [`dashboard/README.md`](dashboard/README.md) for build and local-preview
+instructions. The dashboard is generated from the validated SQLite database and
+does not rely on external services.
 
 ---
 
@@ -389,7 +393,7 @@ Generate:
 
 ### Current Phase
 
-**Phase 6 — Dashboard**
+**Core first-party project complete; Phase 7 external data is optional**
 
 The project has moved beyond initial setup and data collection.
 
@@ -421,12 +425,15 @@ coverage of the recurring report datasets currently represented by the schema.
 - Automated database tests implemented
 - Monthly analytical views finalized
 - Exploratory analysis and reproducible figures completed
+- Interactive dashboard completed
 - Data dictionary created
 
 ### Next Steps
 
-1. Build the interactive dashboard
-2. Integrate selected external datasets
+1. Select external datasets and hypotheses, if expansion beyond the official
+   monthly reports is desired
+2. Extend statistical analysis only after the supporting time span and variables
+   are available
 
 ---
 

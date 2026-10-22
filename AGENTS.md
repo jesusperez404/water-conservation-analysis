@@ -140,8 +140,9 @@ other reports use selectable PDF table words.
 
 Recurring report datasets represented by the schema are complete. Automated
 database tests, monthly analytical views, and exploratory analysis are also
-complete. The current project phase is the interactive dashboard; external-data
-integration remains optional and must preserve the same provenance standards.
+complete. The interactive dashboard is complete. The core first-party project is
+therefore complete; external-data integration remains optional and must preserve
+the same provenance standards.
 
 ## Useful commands
 
@@ -159,6 +160,8 @@ python scripts\extract_field_work_orders.py --write-db
 python scripts\extract_maintenance_cap.py --write-db
 python database\apply_schema.py
 python analysis\run_exploratory_analysis.py
+python dashboard\build_dashboard_data.py
+python -m http.server 8000 -d dashboard
 python -m unittest discover -s tests -v
 python scripts\check_database.py
 ```
