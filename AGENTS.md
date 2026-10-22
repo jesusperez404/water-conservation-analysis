@@ -77,6 +77,7 @@ The following datasets have been implemented and validated across the 15 reports
 - water production
 - chemical usage
 - customer service
+- billing and collections
 
 ### Water production
 
@@ -110,10 +111,18 @@ unit and the data dictionary does not classify it as a chemical.
 percentage, and average speed of answer normalized to seconds. The source narrative's
 agent-offered call count is retained in notes as supporting validation context.
 
+### Billing and collections
+
+`billing_collections` contains monthly billed revenue, collected revenue, aged
+receivables, and 90+ receivables. February 2025 billed revenue and December 2024
+90+ receivables use explicit chart fallbacks because their narrative values are stale
+or malformed. March 2025 aged-receivables fields are `NULL` because the report repeats
+February and provides no March chart values.
+
 ## Current next extraction target
 
-The next planned extraction target is billing and collections unless the user
-chooses another metric.
+The next planned extraction target is field work orders unless the user chooses
+another metric.
 
 ## Useful commands
 
@@ -126,6 +135,7 @@ python scripts\extract_operations.py
 python scripts\extract_water_production.py
 python scripts\extract_chemical_usage.py --write-db
 python scripts\extract_customer_service.py --write-db
+python scripts\extract_billing_collections.py --write-db
 python scripts\check_database.py
 ```
 

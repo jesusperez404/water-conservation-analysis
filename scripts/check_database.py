@@ -13,6 +13,7 @@ TABLES = [
     "water_production",
     "chemical_usage",
     "customer_service",
+    "billing_collections",
 ]
 
 
@@ -90,7 +91,13 @@ def main():
                     WHEN cs.report_id IS NOT NULL
                     THEN 'YES'
                     ELSE 'NO'
-                END AS customer_service
+                END AS customer_service,
+
+                CASE
+                    WHEN b.report_id IS NOT NULL
+                    THEN 'YES'
+                    ELSE 'NO'
+                END AS billing_collections
 
             FROM reports r
 
@@ -119,6 +126,9 @@ def main():
             LEFT JOIN customer_service cs
                 ON cs.report_id = r.report_id
 
+            LEFT JOIN billing_collections b
+                ON b.report_id = r.report_id
+
             ORDER BY r.report_month
             """
         ).fetchall()
@@ -133,6 +143,7 @@ def main():
             water_production,
             chemical_usage,
             customer_service,
+            billing_collections,
         ) in rows:
             print(
                 f"{month}  "
@@ -141,7 +152,8 @@ def main():
                 f"operations={operations}  "
                 f"water_production={water_production}  "
                 f"chemical_usage={chemical_usage}  "
-                f"customer_service={customer_service}"
+                f"customer_service={customer_service}  "
+                f"billing={billing_collections}"
             )
 
             if "NO" in (
@@ -151,6 +163,7 @@ def main():
                 water_production,
                 chemical_usage,
                 customer_service,
+                billing_collections,
             ):
                 coverage_failures += 1
 
@@ -182,6 +195,40 @@ def main():
                 issues.append(f"bad_units={bad_units}")
             if issues:
                 chemical_failures += 1
+            print(f"{month}  {'PASS' if not issues else 'FAIL: ' + ', '.join(issues)}")
+
+        print("\nBILLING AND COLLECTIONS CHECKS")
+        print("-" * 72)
+
+        billing_rows = conn.execute(
+            """
+            SELECT
+                observation_month,
+                revenue_billed_usd,
+                revenue_collected_usd,
+                aged_accounts_receivable_usd,
+                accounts_receivable_90_plus_usd
+            FROM billing_collections
+            ORDER BY observation_month
+            """
+        ).fetchall()
+
+        billing_failures = 0
+        for month, billed, collected, aged_ar, ar_90_plus in billing_rows:
+            issues = []
+            if billed is None or billed < 0:
+                issues.append("revenue_billed")
+            if collected is None or collected < 0:
+                issues.append("revenue_collected")
+            if month == "2025-03-01":
+                if aged_ar is not None or ar_90_plus is not None:
+                    issues.append("expected_missing_ar")
+            elif aged_ar is None or ar_90_plus is None:
+                issues.append("missing_ar")
+            elif aged_ar < 0 or ar_90_plus < 0 or ar_90_plus > aged_ar:
+                issues.append("invalid_ar")
+            if issues:
+                billing_failures += 1
             print(f"{month}  {'PASS' if not issues else 'FAIL: ' + ', '.join(issues)}")
 
         print("\nCUSTOMER SERVICE CHECKS")
@@ -269,6 +316,7 @@ def main():
             and range_failures == 0
             and chemical_failures == 0
             and service_failures == 0
+            and billing_failures == 0
         ):
             print("PASS: database coverage and dataset sanity checks passed.")
         else:
@@ -277,7 +325,8 @@ def main():
                 f"{coverage_failures} coverage failure(s), "
                 f"{range_failures} water-production range failure(s), "
                 f"{chemical_failures} chemical-usage failure(s), "
-                f"{service_failures} customer-service failure(s)."
+                f"{service_failures} customer-service failure(s), "
+                f"{billing_failures} billing failure(s)."
             )
 
     finally:

@@ -171,14 +171,19 @@ normalizes the reported minutes and seconds to `average_speed_seconds`.
 
 | Field | Description | Unit | Frequency | Source | Extraction | Priority |
 |---|---|---|---|---|---|---|
-| `revenue_billed` | Revenue billed during reporting period | USD | Monthly | Customer Billing | Text/Chart | Low |
-| `revenue_collected` | Revenue collected during reporting period | USD | Monthly | Collections | USD | Low |
-| `aged_accounts_receivable` | Total aged accounts receivable | USD | Monthly | Aged Accounts Receivable | Text/Chart | Low |
-| `accounts_receivable_90_plus` | Accounts receivable 90+ days outstanding | USD | Monthly | Aged Accounts Receivable | Text/Chart | Low |
+| `revenue_billed_usd` | Revenue billed during reporting period | USD | Monthly | Customer Billing | Validated text/chart extraction | Low |
+| `revenue_collected_usd` | Revenue collected during reporting period | USD | Monthly | Collections | Validated text extraction | Low |
+| `aged_accounts_receivable_usd` | Total aged accounts receivable | USD | Monthly | Aged Accounts Receivable | Validated text extraction | Low |
+| `accounts_receivable_90_plus_usd` | Accounts receivable 90+ days outstanding | USD | Monthly | Aged Accounts Receivable | Validated text/chart extraction | Low |
 
 ### Notes
 
-Financial information is included for operational context but is not currently a primary conservation-analysis dataset.
+Billing and collections has been extracted, source-validated, and loaded for all
+15 reports. February 2025 billed revenue is the sum of the report's FIRE and
+WATER service-chart values because its narrative repeats January. December 2024
+90+ receivables is the sum of the Over-180 and 91–180 chart values because the
+narrative uses ambiguous punctuation. March 2025 aged-receivables values are
+`NULL`: both the narrative and chart stop at February.
 
 ---
 
@@ -290,7 +295,7 @@ Every extracted observation should be traceable back to:
 
 # Extraction Priority
 
-The first six priority datasets are complete and validated across all 15
+The first seven priority datasets are complete and validated across all 15
 reports:
 
 1. **Water Production** — Complete
@@ -299,9 +304,10 @@ reports:
 4. **Operational / Infrastructure Events** — Complete
 5. **Chemical Usage** — Complete
 6. **Customer Service** — Complete
+7. **Billing and Collections** — Complete
 
-The next extraction target is **Billing and Collections**. Field-work-order and
-maintenance datasets remain later targets.
+The next extraction target is **Field Work Orders**. Maintenance data remains a
+later target.
 
 ---
 
@@ -344,4 +350,7 @@ The extracted data should support investigation of:
 - [x] Extract and validate customer service across all 15 reports
 - [x] Normalize average speed of answer to seconds
 - [x] Load validated customer service transactionally
-- [ ] Extract and validate billing and collections
+- [x] Extract and validate billing and collections across all 15 reports
+- [x] Preserve unreported March 2025 aged-receivables values as `NULL`
+- [x] Load validated billing and collections transactionally
+- [ ] Extract and validate field work orders
