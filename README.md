@@ -64,6 +64,8 @@ The project currently contains **15 monthly Weir River Water System reports cove
 - [x] Water production validated across all 15 reports
 - [x] Chemical usage extraction implemented
 - [x] Chemical usage validated across all 15 reports
+- [x] Customer service extraction implemented
+- [x] Customer service validated across all 15 reports
 - [x] Database integrity checking implemented
 - [x] Data dictionary created
 
@@ -77,12 +79,16 @@ The project currently contains **15 monthly Weir River Water System reports cove
 | Operational events | 15/15 | Complete |
 | Water production | 15/15 | Complete |
 | Chemical usage | 15/15 | Complete |
+| Customer service | 15/15 | Complete |
 
 The current database contains **81 validated operational event records** and
 **15 validated monthly water-production records**.
 
 The chemical-usage table contains **120 validated observations**: eight
 documented chemicals for each of the 15 report months.
+
+The customer-service table contains **15 validated monthly records** with total
+calls, service level, and average speed of answer.
 
 Water production is derived from the current-year series in the report charts.
 The extractor validates all 15 reports before transactionally rebuilding the
@@ -123,6 +129,7 @@ scripts/
 ├── extract_operations.py
 ├── extract_water_production.py
 ├── extract_chemical_usage.py
+├── extract_customer_service.py
 └── check_database.py
 
 analysis/
@@ -231,6 +238,7 @@ Additional dependencies will be added as the project develops.
 - [x] Extract operational events
 - [x] Extract water production
 - [x] Extract chemical usage
+- [x] Extract customer service data
 - [x] Normalize extracted observations
 - [x] Validate extracted values
 - [x] Record source-page provenance
@@ -238,7 +246,6 @@ Additional dependencies will be added as the project develops.
 
 #### Remaining
 
-- [ ] Extract customer service data
 - [ ] Extract billing and collections
 - [ ] Extract field work orders
 - [ ] Extract maintenance expenditures
@@ -260,6 +267,7 @@ Additional dependencies will be added as the project develops.
 - [x] Import operational events
 - [x] Import water production
 - [x] Import chemical usage
+- [x] Import customer service
 - [x] Database integrity validation
 - [x] Data provenance fields
 - [x] Data dictionary
@@ -364,9 +372,9 @@ Generate:
 
 The project has moved beyond initial setup and data collection.
 
-The first five major datasets — **precipitation, meter statistics, operational events, water production, and chemical usage** — have now been extracted, validated, and loaded into the SQLite database for all 15 monthly reports.
+Six major datasets — **precipitation, meter statistics, operational events, water production, chemical usage, and customer service** — have now been extracted, validated, and loaded into the SQLite database for all 15 monthly reports.
 
-The next extraction target is **customer service**.
+The next extraction target is **billing and collections**.
 
 ### Completed
 
@@ -382,12 +390,13 @@ The next extraction target is **customer service**.
 - Operational events extracted and validated
 - Water production extracted and validated
 - Chemical usage extracted and validated
+- Customer service extracted and validated
 - Database integrity checks implemented
 - Data dictionary created
 
 ### Next Steps
 
-1. Extract and validate customer service data
+1. Extract and validate billing and collections data
 2. Continue extracting remaining report sections
 3. Complete the analytical database
 4. Begin exploratory analysis

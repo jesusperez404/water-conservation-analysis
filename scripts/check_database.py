@@ -12,6 +12,7 @@ TABLES = [
     "operational_events",
     "water_production",
     "chemical_usage",
+    "customer_service",
 ]
 
 
@@ -83,7 +84,13 @@ def main():
                     WHEN c.chemical_count = 8
                     THEN 'YES'
                     ELSE 'NO'
-                END AS chemical_usage
+                END AS chemical_usage,
+
+                CASE
+                    WHEN cs.report_id IS NOT NULL
+                    THEN 'YES'
+                    ELSE 'NO'
+                END AS customer_service
 
             FROM reports r
 
@@ -109,6 +116,9 @@ def main():
             ) c
                 ON c.report_id = r.report_id
 
+            LEFT JOIN customer_service cs
+                ON cs.report_id = r.report_id
+
             ORDER BY r.report_month
             """
         ).fetchall()
@@ -122,6 +132,7 @@ def main():
             operations,
             water_production,
             chemical_usage,
+            customer_service,
         ) in rows:
             print(
                 f"{month}  "
@@ -129,7 +140,8 @@ def main():
                 f"meter={meter}  "
                 f"operations={operations}  "
                 f"water_production={water_production}  "
-                f"chemical_usage={chemical_usage}"
+                f"chemical_usage={chemical_usage}  "
+                f"customer_service={customer_service}"
             )
 
             if "NO" in (
@@ -138,6 +150,7 @@ def main():
                 operations,
                 water_production,
                 chemical_usage,
+                customer_service,
             ):
                 coverage_failures += 1
 
@@ -169,6 +182,34 @@ def main():
                 issues.append(f"bad_units={bad_units}")
             if issues:
                 chemical_failures += 1
+            print(f"{month}  {'PASS' if not issues else 'FAIL: ' + ', '.join(issues)}")
+
+        print("\nCUSTOMER SERVICE CHECKS")
+        print("-" * 72)
+
+        service_rows = conn.execute(
+            """
+            SELECT
+                observation_month,
+                customer_contacts,
+                service_level_pct,
+                average_speed_seconds
+            FROM customer_service
+            ORDER BY observation_month
+            """
+        ).fetchall()
+
+        service_failures = 0
+        for month, contacts, service_level, answer_seconds in service_rows:
+            issues = []
+            if contacts is None or contacts <= 0:
+                issues.append("customer_contacts")
+            if service_level is None or not 0 <= service_level <= 100:
+                issues.append("service_level")
+            if answer_seconds is None or answer_seconds < 0:
+                issues.append("average_speed")
+            if issues:
+                service_failures += 1
             print(f"{month}  {'PASS' if not issues else 'FAIL: ' + ', '.join(issues)}")
 
         print("\nWATER PRODUCTION RANGE CHECKS")
@@ -227,6 +268,7 @@ def main():
             coverage_failures == 0
             and range_failures == 0
             and chemical_failures == 0
+            and service_failures == 0
         ):
             print("PASS: database coverage and dataset sanity checks passed.")
         else:
@@ -234,7 +276,8 @@ def main():
                 "FAIL: "
                 f"{coverage_failures} coverage failure(s), "
                 f"{range_failures} water-production range failure(s), "
-                f"{chemical_failures} chemical-usage failure(s)."
+                f"{chemical_failures} chemical-usage failure(s), "
+                f"{service_failures} customer-service failure(s)."
             )
 
     finally:

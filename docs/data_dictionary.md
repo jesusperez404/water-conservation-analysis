@@ -154,12 +154,16 @@ Estimated reads may be particularly important when evaluating data reliability.
 
 | Field | Description | Unit | Frequency | Source | Extraction | Priority |
 |---|---|---|---|---|---|---|
-| `customer_contacts` | Customer contacts handled | count | Monthly | Customer Service | Text/Chart | Medium |
-| `service_level` | Customer-service performance metric | % / report-specific | Monthly | Customer Service | Text/Chart | Medium |
+| `customer_contacts` | Total calls received | count | Monthly | Customer Contact | Validated text extraction | Medium |
+| `service_level_pct` | Reported customer-service level | % | Monthly | Customer Contact | Validated text extraction | Medium |
+| `average_speed_seconds` | Average speed of answer, normalized to seconds | seconds | Monthly | Customer Contact | Validated text extraction | Medium |
 
 ### Notes
 
-Customer-service measurements are useful for understanding system activity but are secondary to the core conservation analysis.
+Customer service has been extracted, source-validated, and loaded for all 15
+reports. The extractor verifies that the month named in the narrative matches
+the report month, validates agent-offered calls against total calls, and
+normalizes the reported minutes and seconds to `average_speed_seconds`.
 
 ---
 
@@ -286,7 +290,7 @@ Every extracted observation should be traceable back to:
 
 # Extraction Priority
 
-The first five priority datasets are complete and validated across all 15
+The first six priority datasets are complete and validated across all 15
 reports:
 
 1. **Water Production** — Complete
@@ -294,9 +298,10 @@ reports:
 3. **Meter Statistics** — Complete
 4. **Operational / Infrastructure Events** — Complete
 5. **Chemical Usage** — Complete
+6. **Customer Service** — Complete
 
-The next extraction target is **Customer Service**. Financial,
-field-work-order, and maintenance datasets remain later targets.
+The next extraction target is **Billing and Collections**. Field-work-order and
+maintenance datasets remain later targets.
 
 ---
 
@@ -336,4 +341,7 @@ The extracted data should support investigation of:
 - [x] Extract and validate chemical usage across all 15 reports
 - [x] Cross-validate repeated historical chemical-use values
 - [x] Load validated chemical usage transactionally
-- [ ] Extract and validate customer service
+- [x] Extract and validate customer service across all 15 reports
+- [x] Normalize average speed of answer to seconds
+- [x] Load validated customer service transactionally
+- [ ] Extract and validate billing and collections

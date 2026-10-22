@@ -76,6 +76,7 @@ The following datasets have been implemented and validated across the 15 reports
 - operational events
 - water production
 - chemical usage
+- customer service
 
 ### Water production
 
@@ -103,10 +104,16 @@ values repeated in later reports before transactionally rebuilding the table.
 `Dies./gen.` is not loaded as chemical usage because the reports do not define its
 unit and the data dictionary does not classify it as a chemical.
 
+### Customer service
+
+`customer_service` contains the monthly total calls, reported service-level
+percentage, and average speed of answer normalized to seconds. The source narrative's
+agent-offered call count is retained in notes as supporting validation context.
+
 ## Current next extraction target
 
-The next planned extraction target is customer service unless the user chooses
-another metric.
+The next planned extraction target is billing and collections unless the user
+chooses another metric.
 
 ## Useful commands
 
@@ -118,6 +125,7 @@ python scripts\extract_meter_statistics.py
 python scripts\extract_operations.py
 python scripts\extract_water_production.py
 python scripts\extract_chemical_usage.py --write-db
+python scripts\extract_customer_service.py --write-db
 python scripts\check_database.py
 ```
 
