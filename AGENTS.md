@@ -79,6 +79,7 @@ The following datasets have been implemented and validated across the 15 reports
 - customer service
 - billing and collections
 - field work orders
+- maintenance capital
 
 ### Water production
 
@@ -126,10 +127,20 @@ February and provides no March chart values.
 `collection_posting`. The August 2025 decline in reported total work orders is
 preserved exactly as published.
 
-## Current next extraction target
+### Maintenance capital
 
-The next planned extraction target is maintenance capital unless the user chooses
-another metric.
+`maintenance_cap` contains one current-month `total` observation per report.
+Monthly expenditure is the table's paid-maintenance value. Cumulative
+expenditure includes reported estimated work not yet paid and reconciles to the
+annual budget and remaining balance. January through March 2025 use
+source-validated raster transcriptions guarded by worksheet-image hashes; the
+other reports use selectable PDF table words.
+
+## Current next target
+
+Recurring report datasets represented by the schema are complete. The next
+planned database work is automated integrity tests and analytical views before
+exploratory analysis.
 
 ## Useful commands
 
@@ -144,6 +155,7 @@ python scripts\extract_chemical_usage.py --write-db
 python scripts\extract_customer_service.py --write-db
 python scripts\extract_billing_collections.py --write-db
 python scripts\extract_field_work_orders.py --write-db
+python scripts\extract_maintenance_cap.py --write-db
 python scripts\check_database.py
 ```
 

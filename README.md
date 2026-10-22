@@ -70,6 +70,8 @@ The project currently contains **15 monthly Weir River Water System reports cove
 - [x] Billing and collections validated across all 15 reports
 - [x] Field work order extraction implemented
 - [x] Field work orders validated across all 15 reports
+- [x] Maintenance CAP extraction implemented
+- [x] Maintenance CAP validated across all 15 reports
 - [x] Database integrity checking implemented
 - [x] Data dictionary created
 
@@ -86,6 +88,7 @@ The project currently contains **15 monthly Weir River Water System reports cove
 | Customer service | 15/15 | Complete |
 | Billing and collections | 15/15 | Complete |
 | Field work orders | 15/15 | Complete |
+| Maintenance CAP | 15/15 | Complete |
 
 The current database contains **81 validated operational event records** and
 **15 validated monthly water-production records**.
@@ -102,6 +105,11 @@ February values and no March chart observation.
 
 Field work orders contains **30 validated observations**: total work orders and
 collection-posting activities for each report month.
+
+Maintenance CAP contains **15 validated monthly records**. Monthly expenditure
+uses the report's current-month paid-maintenance value; cumulative expenditure
+reconciles invoices paid plus estimated work completed but not paid against the
+annual contract budget and reported remaining balance.
 
 Water production is derived from the current-year series in the report charts.
 The extractor validates all 15 reports before transactionally rebuilding the
@@ -243,7 +251,7 @@ Additional dependencies will be added as the project develops.
 
 ### Phase 3 — Data Extraction
 
-**Status: In Progress**
+**Status: Complete**
 
 #### Completed
 
@@ -256,15 +264,11 @@ Additional dependencies will be added as the project develops.
 - [x] Extract customer service data
 - [x] Extract billing and collections
 - [x] Extract field work orders
+- [x] Extract maintenance expenditures
 - [x] Normalize extracted observations
 - [x] Validate extracted values
 - [x] Record source-page provenance
 - [x] Implement extraction safety checks
-
-#### Remaining
-
-- [ ] Extract maintenance expenditures
-- [ ] Validate remaining datasets
 
 ---
 
@@ -285,14 +289,14 @@ Additional dependencies will be added as the project develops.
 - [x] Import customer service
 - [x] Import billing and collections
 - [x] Import field work orders
+- [x] Import maintenance expenditures
 - [x] Database integrity validation
 - [x] Data provenance fields
 - [x] Data dictionary
+- [x] Complete database coverage
 
 #### Remaining
 
-- [ ] Import remaining report datasets
-- [ ] Complete database coverage
 - [ ] Add automated database tests
 - [ ] Finalize analytical views
 
@@ -385,13 +389,15 @@ Generate:
 
 ### Current Phase
 
-**Phase 3 — Data Extraction**
+**Phase 4 — Database**
 
 The project has moved beyond initial setup and data collection.
 
-Eight major datasets — **precipitation, meter statistics, operational events, water production, chemical usage, customer service, billing and collections, and field work orders** — have now been extracted, validated, and loaded into the SQLite database for all 15 monthly reports.
-
-The next extraction target is **maintenance expenditures**.
+Nine major datasets — **precipitation, meter statistics, operational events,
+water production, chemical usage, customer service, billing and collections,
+field work orders, and maintenance CAP** — have now been extracted, validated,
+and loaded into the SQLite database for all 15 monthly reports. This completes
+coverage of the recurring report datasets currently represented by the schema.
 
 ### Completed
 
@@ -410,18 +416,18 @@ The next extraction target is **maintenance expenditures**.
 - Customer service extracted and validated
 - Billing and collections extracted and validated
 - Field work orders extracted and validated
+- Maintenance CAP extracted and validated
 - Database integrity checks implemented
 - Data dictionary created
 
 ### Next Steps
 
-1. Extract and validate maintenance expenditures
-2. Continue extracting remaining report sections
-3. Complete the analytical database
-4. Begin exploratory analysis
-5. Identify relationships and anomalies
-6. Integrate external datasets
-7. Build visualizations and dashboard
+1. Add automated database tests
+2. Finalize analytical views
+3. Begin exploratory analysis
+4. Identify relationships and anomalies
+5. Integrate external datasets
+6. Build visualizations and dashboard
 
 ---
 

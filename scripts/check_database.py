@@ -15,6 +15,7 @@ TABLES = [
     "customer_service",
     "billing_collections",
     "field_work_orders",
+    "maintenance_cap",
 ]
 
 
@@ -104,7 +105,13 @@ def main():
                     WHEN f.work_order_count = 2
                     THEN 'YES'
                     ELSE 'NO'
-                END AS field_work_orders
+                END AS field_work_orders,
+
+                CASE
+                    WHEN mc.report_id IS NOT NULL
+                    THEN 'YES'
+                    ELSE 'NO'
+                END AS maintenance_cap
 
             FROM reports r
 
@@ -143,6 +150,9 @@ def main():
             ) f
                 ON f.report_id = r.report_id
 
+            LEFT JOIN maintenance_cap mc
+                ON mc.report_id = r.report_id
+
             ORDER BY r.report_month
             """
         ).fetchall()
@@ -159,6 +169,7 @@ def main():
             customer_service,
             billing_collections,
             field_work_orders,
+            maintenance_cap,
         ) in rows:
             print(
                 f"{month}  "
@@ -169,7 +180,8 @@ def main():
                 f"chemical_usage={chemical_usage}  "
                 f"customer_service={customer_service}  "
                 f"billing={billing_collections}  "
-                f"work_orders={field_work_orders}"
+                f"work_orders={field_work_orders}  "
+                f"maintenance_cap={maintenance_cap}"
             )
 
             if "NO" in (
@@ -181,8 +193,46 @@ def main():
                 customer_service,
                 billing_collections,
                 field_work_orders,
+                maintenance_cap,
             ):
                 coverage_failures += 1
+
+        print("\nMAINTENANCE CAP CHECKS")
+        print("-" * 72)
+
+        maintenance_rows = conn.execute(
+            """
+            SELECT
+                observation_month,
+                category,
+                monthly_expenditure_usd,
+                cumulative_expenditure_usd,
+                annual_budget_usd,
+                remaining_budget_usd
+            FROM maintenance_cap
+            ORDER BY observation_month
+            """
+        ).fetchall()
+
+        maintenance_failures = 0
+        for month, category, monthly, cumulative, budget, remaining in maintenance_rows:
+            issues = []
+            if category != "total":
+                issues.append("category")
+            if monthly is None or monthly < 0:
+                issues.append("monthly_expenditure")
+            if cumulative is None or cumulative < 0:
+                issues.append("cumulative_expenditure")
+            if budget is None or budget <= 0:
+                issues.append("annual_budget")
+            if remaining is None:
+                issues.append("remaining_budget")
+            elif budget is not None and cumulative is not None:
+                if abs((budget - cumulative) - remaining) > 0.02:
+                    issues.append("budget_reconciliation")
+            if issues:
+                maintenance_failures += 1
+            print(f"{month}  {'PASS' if not issues else 'FAIL: ' + ', '.join(issues)}")
 
         print("\nCHEMICAL USAGE CHECKS")
         print("-" * 72)
@@ -368,6 +418,7 @@ def main():
             and service_failures == 0
             and billing_failures == 0
             and work_order_failures == 0
+            and maintenance_failures == 0
         ):
             print("PASS: database coverage and dataset sanity checks passed.")
         else:
@@ -378,7 +429,8 @@ def main():
                 f"{chemical_failures} chemical-usage failure(s), "
                 f"{service_failures} customer-service failure(s), "
                 f"{billing_failures} billing failure(s), "
-                f"{work_order_failures} work-order failure(s)."
+                f"{work_order_failures} work-order failure(s), "
+                f"{maintenance_failures} maintenance-CAP failure(s)."
             )
 
     finally:

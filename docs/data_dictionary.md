@@ -208,14 +208,26 @@ consistently across the full reporting period.
 
 | Field | Description | Unit | Frequency | Source | Extraction | Priority |
 |---|---|---|---|---|---|---|
-| `maintenance_budget` | Maintenance capital budget | USD | Reporting period | Maintenance CAP | Table | Medium |
-| `maintenance_expenditure` | Maintenance capital expenditure | USD | Monthly | Maintenance CAP | Table | Medium |
-| `maintenance_cumulative_expenditure` | Cumulative expenditure | USD | Reporting period | Maintenance CAP | Table | Medium |
-| `maintenance_remaining_budget` | Remaining budget | USD | Reporting period | Maintenance CAP | Table | Medium |
+| `annual_budget_usd` | Annual maintenance contract budget | USD | Contract year | Maintenance CAP | PDF table / validated raster transcription | Complete |
+| `monthly_expenditure_usd` | Total paid monthly maintenance expenses for the current report month | USD | Monthly | Maintenance CAP | PDF table / validated raster transcription | Complete |
+| `cumulative_expenditure_usd` | Cumulative invoices paid plus estimated work completed but not paid | USD | Monthly | Maintenance CAP | PDF table / validated raster transcription | Complete |
+| `remaining_budget_usd` | Annual budget less cumulative expenditure; negative values indicate overspend | USD | Monthly | Maintenance CAP | PDF table / validated raster transcription | Complete |
 
 ### Notes
 
-Maintenance CAP data may eventually allow infrastructure spending to be compared against operational events and system performance.
+Maintenance CAP has been extracted, source-validated, and loaded for all 15
+reports. Each report contributes one `total` row for its current month.
+`monthly_expenditure_usd` preserves the table's **Total Paid Monthly Maintenance
+Expenses** value and does not silently add estimated work that has not been
+paid. `cumulative_expenditure_usd` uses the report's bottom reconciliation of
+invoices paid plus estimated work completed, and must satisfy:
+
+`annual_budget_usd - cumulative_expenditure_usd = remaining_budget_usd`
+
+Negative remaining balances are retained because they explicitly represent
+contract-year overspend. January through March 2025 embed the worksheet as a
+raster image, so those three rows use source-validated transcriptions guarded by
+decoded-image hashes. The other 12 reports use selectable PDF table words.
 
 ---
 
@@ -300,7 +312,7 @@ Every extracted observation should be traceable back to:
 
 # Extraction Priority
 
-The first eight priority datasets are complete and validated across all 15
+The first nine priority datasets are complete and validated across all 15
 reports:
 
 1. **Water Production** — Complete
@@ -311,8 +323,7 @@ reports:
 6. **Customer Service** — Complete
 7. **Billing and Collections** — Complete
 8. **Field Work Orders** — Complete
-
-The next extraction target is **Maintenance Capital / CAP**.
+9. **Maintenance Capital / CAP** — Complete
 
 ---
 
@@ -335,7 +346,7 @@ The extracted data should support investigation of:
 
 # Status
 
-**Phase 3 — Data Extraction**
+**Phase 3 — Data Extraction (Complete)**
 
 - [x] Identify official monthly report source
 - [x] Identify 15 monthly reports
@@ -360,4 +371,6 @@ The extracted data should support investigation of:
 - [x] Load validated billing and collections transactionally
 - [x] Extract and validate field work orders across all 15 reports
 - [x] Load total and collection-posting observations transactionally
-- [ ] Extract and validate maintenance capital
+- [x] Extract and validate maintenance capital across all 15 reports
+- [x] Reconcile maintenance cumulative spend to annual budget and remaining balance
+- [x] Load validated maintenance capital transactionally
