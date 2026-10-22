@@ -75,6 +75,7 @@ The following datasets have been implemented and validated across the 15 reports
 - meter statistics
 - operational events
 - water production
+- chemical usage
 
 ### Water production
 
@@ -93,13 +94,19 @@ Daily chart candidates are generated under
 Do not replace this mapping without documenting and validating the new analytical
 definition.
 
+### Chemical usage
+
+`chemical_usage` contains eight normalized chemical observations per report month.
+The extractor selects only the current report month for loading and cross-validates
+values repeated in later reports before transactionally rebuilding the table.
+
+`Dies./gen.` is not loaded as chemical usage because the reports do not define its
+unit and the data dictionary does not classify it as a chemical.
+
 ## Current next extraction target
 
-The next planned extraction target is chemical usage unless the user chooses another
-metric.
-
-Chemical-use tables repeat historical months, so ingestion must avoid duplicate
-observations when the same month appears in multiple reports.
+The next planned extraction target is customer service unless the user chooses
+another metric.
 
 ## Useful commands
 
@@ -110,6 +117,7 @@ python scripts\extract_precipitation.py
 python scripts\extract_meter_statistics.py
 python scripts\extract_operations.py
 python scripts\extract_water_production.py
+python scripts\extract_chemical_usage.py --write-db
 python scripts\check_database.py
 ```
 

@@ -11,6 +11,7 @@ TABLES = [
     "meter_statistics",
     "operational_events",
     "water_production",
+    "chemical_usage",
 ]
 
 
@@ -76,7 +77,13 @@ def main():
                     WHEN w.report_id IS NOT NULL
                     THEN 'YES'
                     ELSE 'NO'
-                END AS water_production
+                END AS water_production,
+
+                CASE
+                    WHEN c.chemical_count = 8
+                    THEN 'YES'
+                    ELSE 'NO'
+                END AS chemical_usage
 
             FROM reports r
 
@@ -95,6 +102,13 @@ def main():
             LEFT JOIN water_production w
                 ON w.report_id = r.report_id
 
+            LEFT JOIN (
+                SELECT report_id, COUNT(*) AS chemical_count
+                FROM chemical_usage
+                GROUP BY report_id
+            ) c
+                ON c.report_id = r.report_id
+
             ORDER BY r.report_month
             """
         ).fetchall()
@@ -107,13 +121,15 @@ def main():
             meter,
             operations,
             water_production,
+            chemical_usage,
         ) in rows:
             print(
                 f"{month}  "
                 f"precipitation={precipitation}  "
                 f"meter={meter}  "
                 f"operations={operations}  "
-                f"water_production={water_production}"
+                f"water_production={water_production}  "
+                f"chemical_usage={chemical_usage}"
             )
 
             if "NO" in (
@@ -121,8 +137,39 @@ def main():
                 meter,
                 operations,
                 water_production,
+                chemical_usage,
             ):
                 coverage_failures += 1
+
+        print("\nCHEMICAL USAGE CHECKS")
+        print("-" * 72)
+
+        chemical_rows = conn.execute(
+            """
+            SELECT
+                observation_month,
+                COUNT(*) AS row_count,
+                COUNT(DISTINCT chemical_name) AS chemical_count,
+                SUM(CASE WHEN amount IS NULL OR amount < 0 THEN 1 ELSE 0 END),
+                SUM(CASE WHEN unit IS NULL OR TRIM(unit) = '' THEN 1 ELSE 0 END)
+            FROM chemical_usage
+            GROUP BY observation_month
+            ORDER BY observation_month
+            """
+        ).fetchall()
+
+        chemical_failures = 0
+        for month, row_count, chemical_count, bad_amounts, bad_units in chemical_rows:
+            issues = []
+            if row_count != 8 or chemical_count != 8:
+                issues.append(f"coverage={row_count}/{chemical_count}")
+            if bad_amounts:
+                issues.append(f"bad_amounts={bad_amounts}")
+            if bad_units:
+                issues.append(f"bad_units={bad_units}")
+            if issues:
+                chemical_failures += 1
+            print(f"{month}  {'PASS' if not issues else 'FAIL: ' + ', '.join(issues)}")
 
         print("\nWATER PRODUCTION RANGE CHECKS")
         print("-" * 72)
@@ -176,13 +223,18 @@ def main():
         print("\nSUMMARY")
         print("-" * 72)
 
-        if coverage_failures == 0 and range_failures == 0:
-            print("PASS: database coverage and water-production sanity checks passed.")
+        if (
+            coverage_failures == 0
+            and range_failures == 0
+            and chemical_failures == 0
+        ):
+            print("PASS: database coverage and dataset sanity checks passed.")
         else:
             print(
                 "FAIL: "
                 f"{coverage_failures} coverage failure(s), "
-                f"{range_failures} water-production range failure(s)."
+                f"{range_failures} water-production range failure(s), "
+                f"{chemical_failures} chemical-usage failure(s)."
             )
 
     finally:
