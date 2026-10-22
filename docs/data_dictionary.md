@@ -271,6 +271,20 @@ Examples:
 
 ---
 
+# Analytical Views
+
+| View | Grain | Purpose |
+|---|---|---|
+| `monthly_system_summary` | One row per report month | Analysis-ready join of scalar monthly measures, operational events, work orders, and maintenance CAP |
+| `monthly_operations_summary` | One row per report month | Pivoted recurring operational event counts |
+| `monthly_dataset_coverage` | One row per report month | Binary coverage flags for all nine validated datasets |
+
+The views do not replace source tables and do not transform source-derived
+values. Chemical amounts remain in `chemical_usage` because their units differ
+and must not be aggregated as though they were interchangeable.
+
+---
+
 # Data Quality Considerations
 
 ## Historical Repetition

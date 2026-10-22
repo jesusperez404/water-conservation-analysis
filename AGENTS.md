@@ -138,9 +138,9 @@ other reports use selectable PDF table words.
 
 ## Current next target
 
-Recurring report datasets represented by the schema are complete. The next
-planned database work is automated integrity tests and analytical views before
-exploratory analysis.
+Recurring report datasets represented by the schema are complete. Automated
+database tests and the monthly analytical views are also complete. The current
+project phase is exploratory analysis.
 
 ## Useful commands
 
@@ -156,6 +156,8 @@ python scripts\extract_customer_service.py --write-db
 python scripts\extract_billing_collections.py --write-db
 python scripts\extract_field_work_orders.py --write-db
 python scripts\extract_maintenance_cap.py --write-db
+python database\apply_schema.py
+python -m unittest discover -s tests -v
 python scripts\check_database.py
 ```
 
