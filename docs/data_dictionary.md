@@ -46,13 +46,20 @@ Water production is the primary dataset for the conservation analysis.
 
 | Field | Description | Unit | Frequency | Source | Extraction | Priority |
 |---|---|---|---|---|---|---|
-| `finished_water` | Finished water produced by the system | MGD | Monthly | Water Production | Chart | High |
-| `accord_pond_usage` | Water usage from Accord Pond | MG | Monthly | Water Production | Chart | High |
-| `accord_pond_level` | Accord Pond water level | ft | Monthly | Water Production | Chart | High |
+| `finished_water_mgd` | Mean of the current-year daily Finished Water MGD chart series | MGD | Monthly | Water Production | Validated chart extraction | High |
+| `accord_pond_usage_mg` | Sum of the current-year daily Accord Pond Usage MG chart series | MG | Monthly | Water Production | Validated chart extraction | High |
+| `accord_pond_level_ft` | Mean of the current-year daily Accord Pond Level chart series | ft | Monthly | Water Production | Validated chart extraction | High |
 
 ### Notes
 
-The production values are presented primarily as charts rather than conventional tables. The underlying values will need to be extracted and validated before they can be loaded into the database.
+Water production has been extracted, source-validated, and loaded for all 15
+reports covering October 2024 through December 2025.
+
+The extractor identifies each chart's current-year legend series and selects
+the Y axis immediately above the corresponding chart legend. It retains daily
+chart candidates for review, derives the monthly values using the mappings
+above, and modifies SQLite only after all 15 reports pass validation. The final
+table rebuild is transactional and records source-page provenance.
 
 ---
 
@@ -77,20 +84,26 @@ Chemical usage is reported as a monthly operational table.
 
 | Field | Description | Unit | Frequency | Source | Extraction | Priority |
 |---|---|---|---|---|---|---|
-| `sodium_hypochlorite` | Sodium hypochlorite used | gallons | Monthly | Chemical Use | Table | Medium |
-| `aluminum_sulfate` | Aluminum sulfate used | report-specific | Monthly | Chemical Use | Table | Medium |
-| `zinc_orthophosphate` | Zinc orthophosphate used | gallons | Monthly | Chemical Use | Table | Medium |
-| `hydrofluosilicic_acid` | Hydrofluosilicic acid used | gallons | Monthly | Chemical Use | Table | Medium |
-| `potassium_permanganate` | Potassium permanganate used | pounds | Monthly | Chemical Use | Table | Medium |
-| `calcium_hydroxide` | Calcium hydroxide used | tons | Monthly | Chemical Use | Table | Medium |
-| `gen_floc_610` | Gen Floc 610 used | pounds | Monthly | Chemical Use | Table | Medium |
-| `gen_floc_620` | Gen Floc 620 used | pounds | Monthly | Chemical Use | Table | Medium |
+| `sodium_hypochlorite` | Sodium hypochlorite used | gallons | Monthly | Chemical Use | Validated table extraction | Medium |
+| `aluminum_sulfate` | Aluminum sulfate used | report-specific | Monthly | Chemical Use | Validated table extraction | Medium |
+| `zinc_orthophosphate` | Zinc orthophosphate used | gallons | Monthly | Chemical Use | Validated table extraction | Medium |
+| `hydrofluorosilic_acid` | Hydrofluorosilic acid used | gallons | Monthly | Chemical Use | Validated table extraction | Medium |
+| `potassium_permanganate` | Potassium permanganate used | pounds | Monthly | Chemical Use | Validated table extraction | Medium |
+| `calcium_hydroxide` | Calcium hydroxide used | tons | Monthly | Chemical Use | Validated table extraction | Medium |
+| `gen_floc_610` | Gen Floc 610 used | pounds | Monthly | Chemical Use | Validated table extraction | Medium |
+| `gen_floc_620` | Gen Floc 620 used | pounds | Monthly | Chemical Use | Validated table extraction | Medium |
 
 ### Notes
 
-The chemical-use table contains historical months in addition to the current reporting month.
+Chemical usage has been extracted, source-validated, and loaded for all 15
+reports. The normalized database table stores one row per observation month and
+chemical using `chemical_name`, `amount`, and `unit`.
 
-The ingestion process must avoid creating duplicate observations when the same month appears in multiple reports.
+The source table repeats historical months. The extractor cross-validates those
+repeated values but loads only the current month from each report, preventing
+duplicate observations. It validates all reports before transactionally
+rebuilding the 120-row table. `Dies./gen.` is excluded because it is not a
+chemical and its unit is not defined by the report.
 
 ---
 
@@ -141,12 +154,16 @@ Estimated reads may be particularly important when evaluating data reliability.
 
 | Field | Description | Unit | Frequency | Source | Extraction | Priority |
 |---|---|---|---|---|---|---|
-| `customer_contacts` | Customer contacts handled | count | Monthly | Customer Service | Text/Chart | Medium |
-| `service_level` | Customer-service performance metric | % / report-specific | Monthly | Customer Service | Text/Chart | Medium |
+| `customer_contacts` | Total calls received | count | Monthly | Customer Contact | Validated text extraction | Medium |
+| `service_level_pct` | Reported customer-service level | % | Monthly | Customer Contact | Validated text extraction | Medium |
+| `average_speed_seconds` | Average speed of answer, normalized to seconds | seconds | Monthly | Customer Contact | Validated text extraction | Medium |
 
 ### Notes
 
-Customer-service measurements are useful for understanding system activity but are secondary to the core conservation analysis.
+Customer service has been extracted, source-validated, and loaded for all 15
+reports. The extractor verifies that the month named in the narrative matches
+the report month, validates agent-offered calls against total calls, and
+normalizes the reported minutes and seconds to `average_speed_seconds`.
 
 ---
 
@@ -154,14 +171,19 @@ Customer-service measurements are useful for understanding system activity but a
 
 | Field | Description | Unit | Frequency | Source | Extraction | Priority |
 |---|---|---|---|---|---|---|
-| `revenue_billed` | Revenue billed during reporting period | USD | Monthly | Customer Billing | Text/Chart | Low |
-| `revenue_collected` | Revenue collected during reporting period | USD | Monthly | Collections | USD | Low |
-| `aged_accounts_receivable` | Total aged accounts receivable | USD | Monthly | Aged Accounts Receivable | Text/Chart | Low |
-| `accounts_receivable_90_plus` | Accounts receivable 90+ days outstanding | USD | Monthly | Aged Accounts Receivable | Text/Chart | Low |
+| `revenue_billed_usd` | Revenue billed during reporting period | USD | Monthly | Customer Billing | Validated text/chart extraction | Low |
+| `revenue_collected_usd` | Revenue collected during reporting period | USD | Monthly | Collections | Validated text extraction | Low |
+| `aged_accounts_receivable_usd` | Total aged accounts receivable | USD | Monthly | Aged Accounts Receivable | Validated text extraction | Low |
+| `accounts_receivable_90_plus_usd` | Accounts receivable 90+ days outstanding | USD | Monthly | Aged Accounts Receivable | Validated text/chart extraction | Low |
 
 ### Notes
 
-Financial information is included for operational context but is not currently a primary conservation-analysis dataset.
+Billing and collections has been extracted, source-validated, and loaded for all
+15 reports. February 2025 billed revenue is the sum of the report's FIRE and
+WATER service-chart values because its narrative repeats January. December 2024
+90+ receivables is the sum of the Over-180 and 91–180 chart values because the
+narrative uses ambiguous punctuation. March 2025 aged-receivables values are
+`NULL`: both the narrative and chart stop at February.
 
 ---
 
@@ -169,11 +191,16 @@ Financial information is included for operational context but is not currently a
 
 | Field | Description | Unit | Frequency | Source | Extraction | Priority |
 |---|---|---|---|---|---|---|
-| `field_work_orders` | Total field work orders/activities recorded | count | Monthly | Field Work Orders | Text | Medium |
+| `total` | Total field work orders/activities recorded | count | Monthly | Field Work Orders | Validated text extraction | Medium |
+| `collection_posting` | Non-payment collection posting activities | count | Monthly | Field Work Orders | Validated text extraction | Medium |
 
 ### Notes
 
-The reports provide additional categorization of field activities. These categories should be evaluated during extraction before determining whether they warrant separate database fields.
+Field work orders has been extracted, source-validated, and loaded for all 15
+reports. The normalized table uses `work_order_type` and `work_order_count` to
+store the recurring `total` and `collection_posting` observations. Other chart
+categories are not loaded because the narrative does not define them
+consistently across the full reporting period.
 
 ---
 
@@ -181,14 +208,26 @@ The reports provide additional categorization of field activities. These categor
 
 | Field | Description | Unit | Frequency | Source | Extraction | Priority |
 |---|---|---|---|---|---|---|
-| `maintenance_budget` | Maintenance capital budget | USD | Reporting period | Maintenance CAP | Table | Medium |
-| `maintenance_expenditure` | Maintenance capital expenditure | USD | Monthly | Maintenance CAP | Table | Medium |
-| `maintenance_cumulative_expenditure` | Cumulative expenditure | USD | Reporting period | Maintenance CAP | Table | Medium |
-| `maintenance_remaining_budget` | Remaining budget | USD | Reporting period | Maintenance CAP | Table | Medium |
+| `annual_budget_usd` | Annual maintenance contract budget | USD | Contract year | Maintenance CAP | PDF table / validated raster transcription | Complete |
+| `monthly_expenditure_usd` | Total paid monthly maintenance expenses for the current report month | USD | Monthly | Maintenance CAP | PDF table / validated raster transcription | Complete |
+| `cumulative_expenditure_usd` | Cumulative invoices paid plus estimated work completed but not paid | USD | Monthly | Maintenance CAP | PDF table / validated raster transcription | Complete |
+| `remaining_budget_usd` | Annual budget less cumulative expenditure; negative values indicate overspend | USD | Monthly | Maintenance CAP | PDF table / validated raster transcription | Complete |
 
 ### Notes
 
-Maintenance CAP data may eventually allow infrastructure spending to be compared against operational events and system performance.
+Maintenance CAP has been extracted, source-validated, and loaded for all 15
+reports. Each report contributes one `total` row for its current month.
+`monthly_expenditure_usd` preserves the table's **Total Paid Monthly Maintenance
+Expenses** value and does not silently add estimated work that has not been
+paid. `cumulative_expenditure_usd` uses the report's bottom reconciliation of
+invoices paid plus estimated work completed, and must satisfy:
+
+`annual_budget_usd - cumulative_expenditure_usd = remaining_budget_usd`
+
+Negative remaining balances are retained because they explicitly represent
+contract-year overspend. January through March 2025 embed the worksheet as a
+raster image, so those three rows use source-validated transcriptions guarded by
+decoded-image hashes. The other 12 reports use selectable PDF table words.
 
 ---
 
@@ -232,6 +271,20 @@ Examples:
 
 ---
 
+# Analytical Views
+
+| View | Grain | Purpose |
+|---|---|---|
+| `monthly_system_summary` | One row per report month | Analysis-ready join of scalar monthly measures, operational events, work orders, and maintenance CAP |
+| `monthly_operations_summary` | One row per report month | Pivoted recurring operational event counts |
+| `monthly_dataset_coverage` | One row per report month | Binary coverage flags for all nine validated datasets |
+
+The views do not replace source tables and do not transform source-derived
+values. Chemical amounts remain in `chemical_usage` because their units differ
+and must not be aggregated as though they were interchangeable.
+
+---
+
 # Data Quality Considerations
 
 ## Historical Repetition
@@ -271,17 +324,20 @@ Every extracted observation should be traceable back to:
 
 ---
 
-# Initial Priority
+# Extraction Priority
 
-The first datasets to implement should be:
+The first nine priority datasets are complete and validated across all 15
+reports:
 
-1. **Water Production**
-2. **Precipitation**
-3. **Meter Statistics**
-4. **Operational / Infrastructure Events**
-5. **Chemical Usage**
-
-Financial and customer-service datasets can be added afterward.
+1. **Water Production** — Complete
+2. **Precipitation** — Complete
+3. **Meter Statistics** — Complete
+4. **Operational / Infrastructure Events** — Complete
+5. **Chemical Usage** — Complete
+6. **Customer Service** — Complete
+7. **Billing and Collections** — Complete
+8. **Field Work Orders** — Complete
+9. **Maintenance Capital / CAP** — Complete
 
 ---
 
@@ -304,7 +360,7 @@ The extracted data should support investigation of:
 
 # Status
 
-**Phase 2 — Report Analysis**
+**Phase 3 — Data Extraction (Complete)**
 
 - [x] Identify official monthly report source
 - [x] Identify 15 monthly reports
@@ -312,7 +368,23 @@ The extracted data should support investigation of:
 - [x] Identify recurring datasets
 - [x] Identify extraction types
 - [x] Identify initial analytical priorities
-- [ ] Validate chart extraction
-- [ ] Validate fields against all 15 reports programmatically
-- [ ] Finalize database schema
-- [ ] Build automated ingestion pipeline
+- [x] Extract and validate precipitation across all 15 reports
+- [x] Extract and validate meter statistics across all 15 reports
+- [x] Extract and validate operational events across all 15 reports
+- [x] Extract and validate water production across all 15 reports
+- [x] Validate current-year chart extraction and chart-specific Y-axis selection
+- [x] Load validated water-production results transactionally
+- [x] Extract and validate chemical usage across all 15 reports
+- [x] Cross-validate repeated historical chemical-use values
+- [x] Load validated chemical usage transactionally
+- [x] Extract and validate customer service across all 15 reports
+- [x] Normalize average speed of answer to seconds
+- [x] Load validated customer service transactionally
+- [x] Extract and validate billing and collections across all 15 reports
+- [x] Preserve unreported March 2025 aged-receivables values as `NULL`
+- [x] Load validated billing and collections transactionally
+- [x] Extract and validate field work orders across all 15 reports
+- [x] Load total and collection-posting observations transactionally
+- [x] Extract and validate maintenance capital across all 15 reports
+- [x] Reconcile maintenance cumulative spend to annual budget and remaining balance
+- [x] Load validated maintenance capital transactionally

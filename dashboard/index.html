@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive dashboard for validated Weir River Water System monthly report data.">
+  <title>Weir River Water System — Data Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero__eyebrow">Validated public-report data · October 2024–December 2025</div>
+    <div class="hero__row">
+      <div>
+        <h1>Weir River Water System</h1>
+        <p>Explore production, rainfall, infrastructure, meters, finance, and operations across 15 source-validated monthly reports.</p>
+      </div>
+      <div class="status-pill"><span></span>9 datasets complete</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="controls panel" aria-label="Dashboard filters">
+      <div class="control">
+        <label for="start-month">Start month</label>
+        <select id="start-month"></select>
+      </div>
+      <div class="control">
+        <label for="end-month">End month</label>
+        <select id="end-month"></select>
+      </div>
+      <div class="control control--wide">
+        <label for="trend-metric">Trend metric</label>
+        <select id="trend-metric"></select>
+      </div>
+      <button id="reset-filters" type="button">Reset range</button>
+    </section>
+
+    <section class="kpi-grid" aria-label="Summary statistics">
+      <article class="kpi kpi--blue"><span>Average finished water</span><strong id="kpi-production">—</strong><small>mean daily MGD</small></article>
+      <article class="kpi kpi--teal"><span>Peak production</span><strong id="kpi-peak">—</strong><small id="kpi-peak-month">—</small></article>
+      <article class="kpi kpi--sky"><span>Total precipitation</span><strong id="kpi-rain">—</strong><small>inches in selected range</small></article>
+      <article class="kpi kpi--gold"><span>Latest pond level</span><strong id="kpi-pond">—</strong><small>feet, mean daily</small></article>
+      <article class="kpi kpi--violet"><span>Source coverage</span><strong id="kpi-coverage">—</strong><small>months × datasets</small></article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="panel chart-card chart-card--wide">
+        <div class="panel-heading">
+          <div><span class="section-label">Monthly trend</span><h2 id="trend-title">Selected metric</h2></div>
+          <div class="chart-stat" id="trend-change">—</div>
+        </div>
+        <div id="trend-chart" class="chart" role="img" aria-label="Monthly trend chart"></div>
+      </article>
+
+      <article class="panel chart-card">
+        <div class="panel-heading"><div><span class="section-label">Source relationship</span><h2>Pond usage vs. production</h2></div></div>
+        <div id="scatter-chart" class="chart" role="img" aria-label="Pond usage and finished-water production scatter plot"></div>
+        <p class="chart-note">Exploratory Pearson <strong>r = 0.96</strong> across all 15 reports. Correlation is not causation.</p>
+      </article>
+
+      <article class="panel chart-card">
+        <div class="panel-heading"><div><span class="section-label">Chemical operations</span><h2>Chemical usage</h2></div></div>
+        <label class="inline-control" for="chemical-metric">Chemical series</label>
+        <select id="chemical-metric"></select>
+        <div id="chemical-chart" class="chart chart--compact" role="img" aria-label="Selected chemical usage trend"></div>
+        <p class="chart-note" id="chemical-unit-note"></p>
+      </article>
+    </section>
+
+    <section class="panel findings">
+      <div class="panel-heading"><div><span class="section-label">Review queue</span><h2>Validated anomaly flags</h2></div><span class="count-badge" id="anomaly-count">—</span></div>
+      <p>These observations are statistically unusual within the 15-month window. They remain unchanged because each was validated against its source report.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Month</th><th>Metric</th><th>Reported value</th><th>z-score</th></tr></thead>
+          <tbody id="anomaly-table"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="dashboard-grid dashboard-grid--bottom">
+      <article class="panel">
+        <div class="panel-heading"><div><span class="section-label">Coverage</span><h2>Dataset completeness</h2></div></div>
+        <div id="coverage-grid" class="coverage-grid"></div>
+      </article>
+      <article class="panel limitation-panel">
+        <div class="panel-heading"><div><span class="section-label">Interpretation</span><h2>What this dashboard cannot claim</h2></div></div>
+        <ul id="limitations"></ul>
+        <a href="methodology.html">Read the methodology and findings summary →</a>
+      </article>
+    </section>
+
+    <section class="panel data-panel">
+      <div class="panel-heading"><div><span class="section-label">Source-aligned detail</span><h2>Monthly observations</h2></div><button id="download-csv" type="button" class="button-secondary">Download filtered CSV</button></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Month</th><th>Finished water</th><th>Pond usage</th><th>Precipitation</th><th>Actual reads</th><th>Work orders</th><th>Maintenance paid</th></tr></thead>
+          <tbody id="monthly-table"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Built from the tracked SQLite database. Missing source values remain missing; validated values are never changed for presentation.</p>
+  </footer>
+
+  <div id="tooltip" class="tooltip" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

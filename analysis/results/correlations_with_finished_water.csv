@@ -1,0 +1,21 @@
+feature,label,observations,pearson_r,p_value
+chemical__zinc_orthophosphate,Zinc Orthophosphate,15,0.9793200937231621,2.1032541871752052e-10
+accord_pond_usage_mg,Accord Pond usage,15,0.9586348365544287,1.8124829380009457e-08
+chemical__sodium_hypochlorite,Sodium Hypochlorite,15,0.9501687686398551,5.956402934396774e-08
+chemical__gen_floc_610,Gen Floc 610,15,0.9298952692686179,5.212969756003081e-07
+chemical__hydrofluorosilic_acid,Hydrofluorosilic Acid,15,0.8859511071984569,1.1056359539386934e-05
+chemical__gen_floc_620,Gen Floc 620,15,0.8674613930391314,2.8030268755798247e-05
+chemical__aluminum_sulfate,Aluminum Sulfate,15,0.8625369472304669,3.509347303097159e-05
+customer_contacts,Customer contacts,15,0.7206124042937282,0.002439589270774322
+chemical__potassium_permanganate,Potassium Permanganate,15,0.6817079871811136,0.0051256610301224845
+collection_posting_work_orders,Collection-posting work orders,15,-0.5227763777994071,0.04555857223248556
+maintenance_paid_usd,Maintenance paid,15,-0.35576311091205,0.19311886609301748
+estimated_reads_pct,Estimated meter reads,15,0.3033435586317048,0.27173384303012177
+accord_pond_level_ft,Accord Pond level,15,-0.2809093449750998,0.31049486737907483
+service_line_repairs,Service-line repairs,13,0.22089428987712625,0.46831111999855857
+meters_changed,Meters changed,14,0.2014702071890914,0.48976361370245286
+meters_over_10_years_pct,Meters over 10 years,14,-0.16202722268215544,0.5799852439815463
+total_work_orders,Total work orders,15,-0.15244954867295918,0.5875433369244285
+main_breaks,Main breaks,13,0.10061203669604145,0.7436370634211639
+chemical__calcium_hydroxide,Calcium Hydroxide,15,0.09259167753753793,0.7427594242601816
+precipitation_inches,Precipitation,15,0.0295216340505203,0.9168207808801826

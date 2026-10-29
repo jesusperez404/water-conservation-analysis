@@ -1,460 +1,220 @@
 # Water Conservation Analysis
 
-> A reproducible data engineering and analytics platform for investigating municipal water usage, infrastructure, and environmental trends.
+A reproducible PDF-to-SQLite analysis pipeline and interactive dashboard for the
+**Weir River Water System**, serving Hingham, Hull, and North Cohasset,
+Massachusetts. The current release covers **15 official monthly reports from
+October 2024 through December 2025**.
 
----
+**Core project complete:** all nine recurring datasets are extracted and
+source-validated, the database has analytical views and integrity checks, and
+the repository includes exploratory findings and an offline-friendly dashboard.
+External data and longer-term modeling remain future work.
 
-## Overview
+## View the dashboard
 
-This project began as an investigation into the **Weir River Water System** serving **Hingham, Hull, and North Cohasset, Massachusetts**.
+The checked-in dashboard includes its data snapshot. From the repository root,
+serve it with Python; no package installation or build step is needed to view it:
 
-The initial objective is to analyze publicly available monthly water system reports and determine whether long-term trends in water production can be explained by factors such as:
-
-- Weather & precipitation
-- Population growth
-- Development
-- Infrastructure maintenance
-- Water loss & leakage
-- Meter accuracy and replacement
-- Environmental changes
-- Operational activity
-
-Rather than beginning with a conclusion, this project begins with a **hypothesis** and lets the **data determine the outcome**.
-
-The long-term vision is to build a reusable framework that can analyze **any municipal water system** with publicly available operational reports.
-
----
-
-## Project Goals
-
-- Build a reproducible PDF ingestion pipeline
-- Extract operational data from monthly reports
-- Store normalized observations in a relational database
-- Validate extracted data against source documents
-- Analyze relationships between water production, weather, infrastructure, and development
-- Visualize trends through an interactive dashboard
-- Integrate external environmental and development datasets
-- Perform statistical and anomaly analysis
-- Produce transparent, reproducible findings
-
----
-
-## Current Status
-
-**Active Development**
-
-The project currently contains **15 monthly Weir River Water System reports covering October 2024 through December 2025**.
-
-### Completed
-
-- [x] Repository structure established
-- [x] Git development workflow established
-- [x] SQLite database schema designed
-- [x] SQLite database created
-- [x] 15 official monthly reports identified
-- [x] 15 source PDFs downloaded and archived
-- [x] Report metadata seeded into the database
-- [x] Precipitation extraction implemented
-- [x] Precipitation validated across all 15 reports
-- [x] Meter statistics extraction implemented
-- [x] Meter statistics validated across all 15 reports
-- [x] Operational event extraction implemented
-- [x] Operational data validated across all 15 reports
-- [x] Database integrity checking implemented
-- [x] Data dictionary created
-
-### Current Dataset
-
-| Dataset | Coverage | Status |
-|---|---:|---|
-| Monthly reports | 15/15 | Complete |
-| Precipitation | 15/15 | Complete |
-| Meter statistics | 15/15 | Complete |
-| Operational events | 15/15 | Complete |
-| Water production | 0/15 | In progress |
-
-The current database contains **81 validated operational event records**.
-
-Missing operational activities are preserved as `NULL` when the source report does not explicitly report an activity rather than being incorrectly interpreted as zero.
-
----
-
-## Repository Structure
-
-```text
-water-conservation-analysis/
-
-README.md
-LICENSE
-requirements.txt
-
-data/
-├── raw/
-├── extracted/
-├── processed/
-└── external/
-
-database/
-├── schema.sql
-└── water.db
-
-docs/
-└── data_dictionary.md
-
-scripts/
-├── seed_reports.py
-├── download_reports.py
-├── extract_precipitation.py
-├── extract_meter_statistics.py
-├── extract_operations.py
-└── check_database.py
-
-analysis/
-
-dashboard/
-
-tests/
+```sh
+python -m http.server 8000 --bind 127.0.0.1 -d dashboard
 ```
 
----
+Open [localhost:8000](http://localhost:8000). Use an HTTP server rather than
+opening `index.html` directly, because the page fetches its JSON snapshot.
 
-## Project Pipeline
+The dashboard supports date-range and metric filtering, production and pond-use
+comparison, per-chemical trends, anomaly review, dataset coverage, monthly
+details, and filtered CSV export. It has no CDN or external-service dependency.
+See [dashboard instructions](dashboard/README.md) for regeneration details.
+A separately hosted copy is a snapshot and does not automatically synchronize
+with repository changes.
 
-```text
-Official Monthly Reports
-        │
-        ▼
- Automated Downloader
-        │
-        ▼
-      Raw PDFs
-        │
-        ▼
-   PDF Extraction
-        │
-        ▼
- Source Validation
-        │
-        ▼
- SQLite Database
-        │
-        ▼
- Database Integrity Checks
-        │
-        ▼
- Exploratory Analysis
-        │
-        ▼
- Statistical Analysis
-        │
-        ▼
- Interactive Dashboard
-        │
-        ▼
- Evidence-Based Reporting
+## Dataset coverage
+
+| Dataset | Report months | Rows | Grain |
+|---|---:|---:|---|
+| Report metadata | 15/15 | 15 | Report month |
+| Precipitation | 15/15 | 15 | Month |
+| Meter statistics | 15/15 | 15 | Month |
+| Operational events | 15/15 | 81 | Month and reported event type |
+| Water production | 15/15 | 15 | Month |
+| Chemical usage | 15/15 | 120 | Month and chemical; eight per month |
+| Customer service | 15/15 | 15 | Month |
+| Billing and collections | 15/15 | 15 | Month |
+| Field work orders | 15/15 | 30 | Month and work-order type; two per month |
+| Maintenance CAP | 15/15 | 15 | Month; current-report total |
+
+Complete dataset coverage does not mean every optional field is populated.
+Unreported values remain `NULL`.
+
+Sources are the [Town of Hingham monthly water-system reports](https://www.hingham-ma.gov/885/Water-System-Reports).
+Exact report URLs and provenance are retained in `reports` and the observation
+tables. See the [data dictionary](docs/data_dictionary.md) and
+[database schema](database/schema.sql) for definitions.
+
+## Findings and interpretation
+
+- Mean daily finished-water production ranges from **2.75 MGD in December 2024**
+  to **5.38 MGD in July 2025**.
+- Accord Pond usage is strongly associated with production in this window
+  (**Pearson r = 0.96**). Monthly precipitation has little observed linear
+  association (**r = 0.03**).
+- Three observations meet the exploratory two-standard-deviation screening
+  threshold: November 2024 maintenance paid, August 2025 estimated meter reads,
+  and October 2025 precipitation. They remain unchanged as source-validated
+  observations; flags are review candidates, not errors or evidence of fraud.
+
+Read the [exploratory analysis](docs/exploratory_analysis.md),
+[correlation results](analysis/results/correlations_with_finished_water.csv),
+[anomaly results](analysis/results/anomalies.csv), and
+[monthly summary](analysis/results/monthly_system_summary.csv).
+
+Fifteen months are insufficient for robust seasonal decomposition, causal
+attribution, or evaluated forecasting. Small samples, shared seasonality, and
+multiple comparisons limit interpretation of correlations and p-values.
+Customer-consumption and authorized-unbilled-use volumes are unavailable, so
+**water loss cannot be calculated** from production alone. Aggregate billing
+cannot establish improper individual charges. Population, development,
+temperature, drought, and groundwater data have not been joined.
+
+Maintenance cumulative totals can be restated. Use each report's snapshot;
+differences between successive cumulative balances are not exact cash flows.
+
+## Development setup
+
+Use an isolated Python environment. The full dependency snapshot in
+`requirements.txt` includes notebook/GIS tooling and Windows-specific
+`pywinpty`; it is not a minimal cross-platform dashboard dependency list.
+
+Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 ```
 
----
+For Linux/macOS, a focused environment for the pipeline, analysis, and tests can
+be installed without Windows notebook dependencies:
 
-## Technology Stack
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install pandas numpy scipy matplotlib PyMuPDF
+```
 
-| Category | Technology |
+The focused installation is not a pinned reproduction of the full Windows
+environment. Run all commands below from the repository root.
+
+## Validate and regenerate
+
+The validated SQLite snapshot is tracked at `database/water.db`. A fresh clone
+can validate it and regenerate analytical outputs without rerunning extractors:
+
+```sh
+python scripts/check_database.py
+python -m unittest discover -s tests -v
+python analysis/run_exploratory_analysis.py
+python dashboard/build_dashboard_data.py
+```
+
+The analysis command rewrites result CSVs, figures, and its findings document;
+the dashboard builder rewrites `dashboard/data/dashboard.json`. Review generated
+diffs before committing. Neither command is a substitute for source validation.
+
+To apply the schema and refresh analytical views explicitly:
+
+```sh
+python database/apply_schema.py
+```
+
+This command modifies SQLite; it is not required simply to view the dashboard.
+The three views are `monthly_system_summary`, `monthly_operations_summary`, and
+`monthly_dataset_coverage`. Chemicals remain separate because units differ.
+
+## Source extraction and safeguards
+
+Raw PDFs and extraction-review artifacts are deliberately ignored by Git.
+To retrieve the 15 reports using the URLs already in the tracked database:
+
+```sh
+python scripts/download_reports.py
+```
+
+The downloader writes PDFs under `data/raw/` and updates report download
+metadata. For an empty database, schema initialization and
+`database/seed_reports.py` must precede downloading. Do not reseed or rebuild the
+validated snapshot merely to browse the results.
+
+Extraction follows this sequence: inspect source reports, extract candidates,
+validate all 15 reports, load transactionally, then run integrity checks.
+Review individual script options and the [project guidance](AGENTS.md) before
+running an extractor; some scripts write to SQLite as part of their normal run.
+The later extractors expose an explicit `--write-db` load option.
+
+Rules carried through the pipeline:
+
+- Preserve report month, source page, extraction method, units, and notes.
+- Never alter a validated source value to make a check pass; missing is `NULL`,
+  not zero or a carried-forward observation.
+- Production uses the chart's current-year series and its own Y axis:
+  `finished_water_mgd` is mean daily MGD, `accord_pond_usage_mg` is total monthly
+  MG, and `accord_pond_level_ft` is mean daily feet.
+- Chemicals are current-month observations cross-checked against repeated
+  history. Do not combine different chemical units. Aluminum sulfate retains
+  its unresolved `report-specific` unit; `Dies./gen.` is excluded.
+- February 2025 billing and December 2024 90+ receivables use documented chart
+  fallbacks. March 2025 aged receivables remain `NULL` because current-month
+  values are absent.
+- Maintenance paid monthly expense is separate from cumulative estimates of
+  work completed but unpaid. Budget minus cumulative expense must reconcile to
+  remaining budget; negative balances are preserved. January–March 2025 raster
+  transcriptions are guarded by worksheet-image hashes.
+- Preserve the source-reported August 2025 work-order decline and 51% estimated
+  reads rather than normalizing them away.
+
+## Repository map
+
+| Location | Contents |
 |---|---|
-| Language | Python |
-| Data Processing | pandas |
-| PDF Parsing | PyMuPDF |
-| Database | SQLite |
-| Visualization | Matplotlib |
-| Statistics | NumPy, SciPy, scikit-learn |
-| GIS | GeoPandas, Shapely, PyProj |
-| Source Retrieval | requests |
-| Version Control | Git & GitHub |
-
-Additional dependencies will be added as the project develops.
-
----
-
-## Project Roadmap
-
-### Phase 1 — Project Setup
-
-**Status: Complete**
-
-- [x] Create repository structure
-- [x] Documentation
-- [x] Development environment
-- [x] Python virtual environment
-- [x] Core dependencies installed
-- [x] Git workflow established
-- [x] Initial project documentation
-
----
-
-### Phase 2 — Data Collection
-
-**Status: Complete**
-
-- [x] Identify available historical water system reports
-- [x] Identify official source URLs
-- [x] Download historical monthly reports
-- [x] Archive original PDFs
-- [x] Seed report metadata into database
-- [x] Confirm 15-month reporting period
-
----
-
-### Phase 3 — Data Extraction
-
-**Status: In Progress**
-
-#### Completed
-
-- [x] Analyze report layouts
-- [x] Extract precipitation
-- [x] Extract meter statistics
-- [x] Extract operational events
-- [x] Normalize extracted observations
-- [x] Validate extracted values
-- [x] Record source-page provenance
-- [x] Implement extraction safety checks
-
-#### Remaining
-
-- [ ] Extract water production
-- [ ] Extract chemical usage
-- [ ] Extract customer service data
-- [ ] Extract billing and collections
-- [ ] Extract field work orders
-- [ ] Extract maintenance expenditures
-- [ ] Validate remaining datasets
-
----
-
-### Phase 4 — Database
-
-**Status: In Progress**
-
-#### Completed
-
-- [x] Design relational schema
-- [x] Create SQLite database
-- [x] Import report metadata
-- [x] Import precipitation data
-- [x] Import meter statistics
-- [x] Import operational events
-- [x] Database integrity validation
-- [x] Data provenance fields
-- [x] Data dictionary
-
-#### Remaining
-
-- [ ] Import remaining report datasets
-- [ ] Complete database coverage
-- [ ] Add automated database tests
-- [ ] Finalize analytical views
-
----
-
-### Phase 5 — Exploratory Analysis
-
-**Status: Upcoming**
-
-Planned analysis includes:
-
-- [ ] Water production trends
-- [ ] Seasonal patterns
-- [ ] Precipitation relationships
-- [ ] Infrastructure activity
-- [ ] Meter replacement trends
-- [ ] Water loss indicators
-- [ ] Anomaly identification
-- [ ] Cross-dataset comparisons
-
----
-
-### Phase 6 — Dashboard
-
-**Status: Planned**
-
-Develop an interactive dashboard displaying:
-
-- [ ] Water production
-- [ ] Customer demand
-- [ ] Rainfall
-- [ ] Infrastructure events
-- [ ] Meter statistics
-- [ ] Water loss
-- [ ] Historical trends
-- [ ] Custom filtering
-
----
-
-### Phase 7 — External Data
-
-**Status: Planned**
-
-Potential external datasets include:
-
-- [ ] NOAA weather
-- [ ] USGS groundwater
-- [ ] MassGIS wetlands
-- [ ] Land-use data
-- [ ] Development permits
-- [ ] Census population and housing growth
-- [ ] Parcel information
-- [ ] Reservoir / pond information
-
----
-
-### Phase 8 — Statistical Analysis
-
-**Status: Planned**
-
-Perform analyses including:
-
-- [ ] Seasonal decomposition
-- [ ] Trend analysis
-- [ ] Correlation analysis
-- [ ] Rainfall normalization
-- [ ] Anomaly detection
-- [ ] Water loss calculations
-- [ ] Development correlations
-- [ ] Infrastructure correlations
-- [ ] Forecasting
-
----
-
-### Phase 9 — Reporting
-
-**Status: Planned**
-
-Generate:
-
-- [ ] Executive summaries
-- [ ] Technical reports
-- [ ] Interactive dashboards
-- [ ] Investigation documentation
-- [ ] Reproducible analytical outputs
-
----
-
-## Project Status
-
-### Current Phase
-
-**Phase 3 — Data Extraction**
-
-The project has moved beyond initial setup and data collection.
-
-The first three major datasets — **precipitation, meter statistics, and operational events** — have now been extracted, validated, and loaded into the SQLite database for all 15 monthly reports.
-
-The next major extraction target is **water production**.
-
-### Completed
-
-- Repository initialized
-- Development workflow established
-- Database schema designed
-- SQLite database created
-- 15 official monthly reports collected
-- Original source PDFs archived
-- Report metadata loaded
-- Precipitation extracted and validated
-- Meter statistics extracted and validated
-- Operational events extracted and validated
-- Database integrity checks implemented
-- Data dictionary created
-
-### Next Steps
-
-1. Extract and validate water production data
-2. Continue extracting remaining report sections
-3. Complete the analytical database
-4. Begin exploratory analysis
-5. Identify relationships and anomalies
-6. Integrate external datasets
-7. Build visualizations and dashboard
-
----
-
-## Investigation Methodology
-
-This project follows a **data-first approach**.
-
-The purpose is **not** to prove a predetermined conclusion.
-
-Instead, every hypothesis should be evaluated against multiple competing explanations, including:
-
-- Seasonal demand
-- Weather patterns
-- Infrastructure failures
-- Population growth
-- Development
-- Meter inaccuracies
-- Water loss
-- Operational maintenance
-- Environmental conditions
-
-The evidence should determine the conclusions.
-
-An analysis that **rejects the original hypothesis is considered a successful result** if the evidence supports that conclusion.
-
----
-
-## Data Quality & Reproducibility
-
-The extraction process is designed to preserve the relationship between an analytical observation and its original source document.
-
-Each extracted dataset can include:
-
-- Source report
-- Observation month
-- Source page
-- Extraction method
-- Notes
-- Missing-value information
-
-Extraction scripts validate their results before modifying the database.
-
-The database also includes integrity checks to confirm that expected monthly coverage exists across the extracted datasets.
-
-This is intended to make the project **reproducible, auditable, and resistant to silent extraction errors**.
-
----
-
-## Database
-
-The current SQLite database contains tables for:
-
-- Reports
-- Water production
-- Precipitation
-- Chemical usage
-- Operational events
-- Meter statistics
-- Customer service
-- Billing and collections
-- Field work orders
-- Maintenance expenditures
-
-The schema is designed to evolve as additional datasets are extracted.
-
-See [`docs/data_dictionary.md`](docs/data_dictionary.md) for definitions of the current data fields.
-
----
-
-## Future Vision
-
-Although this project begins with the Weir River Water System, the long-term goal is to develop a reusable analytics platform capable of supporting investigations for any municipality that publishes operational water reports.
-
-Future enhancements may include:
-
-- Automated monthly updates
-- Automated source validation
-- GIS mapping
-- Forecasting models
-- Machine learning anomaly detection
-- Water-loss analysis
-- Development impact analysis
-- Public dashboard deployment
-- Multi-municipality support
+| `database/` | Tracked SQLite snapshot, schema, schema application, report seeding |
+| `scripts/` | Report downloader, nine dataset extractors, integrity checker |
+| `analysis/` | Reproducible analysis script, result CSVs, figures |
+| `dashboard/` | Static HTML/CSS/JavaScript, snapshot builder, generated JSON |
+| `docs/` | Data dictionary and exploratory findings |
+| `tests/` | Extractor, database, analysis, and dashboard regression checks |
+| `notebooks/` | Setup and report exploration notebooks |
+| `data/raw/` | Downloaded PDFs; ignored, not included in a clone |
+| `data/processed/` | Generated source-review artifacts; ignored |
+
+The main pipeline uses Python, PyMuPDF, SQLite, pandas, NumPy, SciPy, and
+Matplotlib. The dashboard uses browser-native HTML, CSS, JavaScript, and SVG.
+
+## Completed milestones and future work
+
+- [x] Project setup and official report inventory
+- [x] Nine recurring datasets extracted and source-validated across 15 reports
+- [x] Transactional loading, integrity checks, and monthly analytical views
+- [x] Automated extractor/database/analysis/dashboard tests
+- [x] Exploratory report, reproducible figures, correlations, and anomaly flags
+- [x] Interactive static dashboard and filtered CSV export
+- [ ] Extend report history and select explicit external-data hypotheses
+- [ ] Join weather, drought, groundwater, Census, land-use, or permit data with
+      documented geographic and temporal alignment
+- [ ] Obtain consumption and authorized-unbilled-use records for a water balance
+- [ ] Add supported seasonal modeling and forecasting after sufficient history
+- [ ] Produce broader executive/technical reporting and reusable municipal tooling
+
+The first-party report pipeline and descriptive dashboard are complete. These
+future items are extensions, not claims that causal analysis or water-loss
+measurement has already been delivered. Evidence should determine conclusions,
+including when it rejects the original hypothesis.
+
+## Contributing
+
+Use `development` for integration and focused feature branches for new work.
+Open a pull request for review before changes enter `main`. Keep documentation
+and provenance synchronized; do not commit raw PDFs or processed review files.
+For changes affecting data or outputs, run the integrity checker and relevant
+tests and review the generated diffs. See [AGENTS.md](AGENTS.md) for the full
+extraction and repository workflow.
