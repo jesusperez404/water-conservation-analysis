@@ -10,6 +10,13 @@ source-validated, the database has analytical views and integrity checks, and
 the repository includes exploratory findings and an offline-friendly dashboard.
 External data and longer-term modeling remain future work.
 
+The validated series ends in December 2025 because that is the latest monthly
+report linked on the official report index checked November 22, 2026. This is
+a source-coverage boundary, not a measured drop in water use. The downloader
+uses the 15 stored report URLs; it does not discover or ingest new months
+automatically. Annual water-quality reports are separate sources and do not
+replace the missing monthly observations.
+
 ## View the dashboard
 
 The checked-in dashboard includes its data snapshot. From the repository root,
@@ -198,7 +205,10 @@ Matplotlib. The dashboard uses browser-native HTML, CSS, JavaScript, and SVG.
 - [x] Automated extractor/database/analysis/dashboard tests
 - [x] Exploratory report, reproducible figures, correlations, and anomaly flags
 - [x] Interactive static dashboard and filtered CSV export
-- [ ] Extend report history and select explicit external-data hypotheses
+- [x] Verify the official monthly-report index and identify the data-coverage boundary
+- [ ] Obtain earlier monthly records and January 2026 onward to extend the series
+- [ ] Reconcile annual water-delivery totals with chart-derived production definitions
+- [ ] Evaluate housing/ADU growth alongside weather, seasonality, and service connections
 - [ ] Join weather, drought, groundwater, Census, land-use, or permit data with
       documented geographic and temporal alignment
 - [ ] Obtain consumption and authorized-unbilled-use records for a water balance
@@ -209,6 +219,27 @@ The first-party report pipeline and descriptive dashboard are complete. These
 future items are extensions, not claims that causal analysis or water-loss
 measurement has already been delivered. Evidence should determine conclusions,
 including when it rejects the original hypothesis.
+
+## Next data collection
+
+The next research question is whether changes in housing and service connections
+coincide with changes in water demand. Massachusetts
+[ADU policy changes](https://www.mass.gov/info-details/accessory-dwelling-units)
+took effect in early 2025; the current series has only four months before
+February 2025 and cannot support a reliable before/after conclusion. Policy
+timing is not the same as construction, occupancy, or a new water connection.
+
+Seek monthly production/delivery, aggregate metered consumption, active service
+connections, and new connection counts from January 2020 through the latest
+available month. Link these to actual permitted/completed housing additions
+and account for weather and seasonal demand. Keep aggregate data only;
+customer-identifying records are unnecessary.
+
+The [2025 annual water-quality report](https://www.hingham-ma.gov/DocumentCenter/View/27560/2025-Water-Quality-Report)
+states average water delivered of 3.171 MGD. This has not yet been reconciled
+with our chart-derived finished-water series. Confirm definitions, source
+measurements, aggregation, and any revisions before comparing or combining
+them; no validated values have been changed to force agreement.
 
 ## Contributing
 
